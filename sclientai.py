@@ -26,7 +26,6 @@ sio._sends(conn,(aiInfo,GetHeroType(mapInfo)))
 while True:
 	rBeginInfo=sio._recvs(conn)
 	print 'rbInfo got'
-	print rBeginInfo
 	if rBeginInfo != '|':
 		sio._sends(conn,AI(rBeginInfo))
 		print 'cmd sent'

@@ -32,6 +32,7 @@ while roundEndInfo.over == -1:
 	#发送每回合结束时的信息
 	print roundEndInfo.over
 	sio._sends(conn,roundEndInfo)
+	print 'reInfo sent'
 
 conn.close()
 raw_input('logic end')

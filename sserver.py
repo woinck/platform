@@ -5,9 +5,9 @@ import cPickle,socket,threading,time,sio,basic,os
 #from sclientui import UI_Run
 #from sclientlogic import Logic_Run
 
-def _SocketConnect(host,port,connName,list=1):
+def _SocketConnect(host,port,connName,list = 1):
 	global gProcess,gProc
-	result=[]
+	result = []
 	serv = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	try:
 		serv.bind((host,port))
@@ -17,7 +17,7 @@ def _SocketConnect(host,port,connName,list=1):
 		exit(1)
 		
 	#设定AI连接最大时间
-	if connName=='AI':
+	if connName == 'AI':
 		serv.settimeout(sio.AI_CONNECT_TIMEOUT)
 	else:
 		serv.settimeout(None)
@@ -47,7 +47,7 @@ def _SocketConnect(host,port,connName,list=1):
 			gProc.release()
 	
 	#logic或ui返回
-	if len(result)==1:
+	if len(result) == 1:
 		return result[0]
 	else:
 		return result
@@ -55,7 +55,7 @@ def _SocketConnect(host,port,connName,list=1):
 class Sui(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
-		self.name='Thread-UI'
+		self.name = 'Thread-UI'
 		
 	def run(self):
 		global gameOver,gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,ai_thread
@@ -64,7 +64,7 @@ class Sui(threading.Thread):
 		replayInfo=[]
 		
 		#与UI连接
-		connUI,address=_SocketConnect(sio.HOST,sio.UI_PORT,'UI')
+		connUI,address = _SocketConnect(sio.HOST,sio.UI_PORT,'UI')
 		
 		#发送游戏模式、地图和AI信息
 		gameMode,gameMapPath,gameAIPath=sio._recvs(connUI)
@@ -100,7 +100,7 @@ class Sui(threading.Thread):
 			if gProcess != sio.CONNECTED:
 				gProc.wait()
 			else:
-				gProcess=sio.MAP_SET
+				gProcess = sio.MAP_SET
 				gProc.notifyAll()
 				gProc.release()
 				break
@@ -112,24 +112,22 @@ class Sui(threading.Thread):
 				gProc.wait()
 			else:
 				sio._sends(connUI,(mapInfo,aiInfo))
-				gProcess=sio.ROUND
+				gProcess = sio.ROUND
 				gProc.notifyAll()
 				gProc.release()
 				break
 			gProc.release()
 		
-		print 'ui init'
 		#初始化完毕，进入回合==============================================================
 		flag = False
 		#等待回合初始信息产生完毕
 		while gProcess != sio.OVER:
 			while rProc.acquire():
-				if rProcess != sio.RBINFO_SET:
+				if rProcess == sio.START:
 					rProc.wait()
 				else:
 					#发送回合信息
 					sio._sends(connUI,rbInfo)
-					print 'rbInfo sent'
 					rProc.release()
 					break
 				rProc.release()
@@ -158,30 +156,30 @@ class Sui(threading.Thread):
 		if sio.REPLAY_MODE:	
 			#检验回放文件目录
 			try:
-				os.mkdir(os.getcwd()+'\\ReplayFiles')
+				os.mkdir(os.getcwd() + '\\ReplayFiles')
 			except:
 				pass
 			#写入回放
-			sio._WriteFile(replayInfo,os.getcwd()+'\\ReplayFiles\\'+sio._ReplayFileName(aiInfo))
+			sio._WriteFile(replayInfo,os.getcwd() + '\\ReplayFiles\\' + sio._ReplayFileName(aiInfo))
 			
 		connUI.close()
 		
 class Slogic(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
-		self.name='Thread-Logic'
+		self.name = 'Thread-Logic'
 	
 	def run(self):
 		global gameOver,gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand
 
-		connLogic,address=_SocketConnect(sio.HOST,sio.LOGIC_PORT,'Logic')
+		connLogic,address = _SocketConnect(sio.HOST,sio.LOGIC_PORT,'Logic')
 		
 		#发送游戏初始信息
 		while gProc.acquire():
 			if gProcess < sio.HERO_TYPE_SET:
 				gProc.wait()
 			else:
-				base=sio.construct_base(mapInfo,heroType)###########################
+				base = sio.construct_base(mapInfo,heroType)###########################
 				sio._sends(connLogic,basic.Begin_Info(mapInfo,base,heroType))
 				gProc.release()
 				break
@@ -196,16 +194,16 @@ class Slogic(threading.Thread):
 				break
 			gProc.release()
 		
-		print 'logic init'
 		#初始化完毕，进入回合==============================================================	
 		
 		while gProcess != sio.OVER:
+			
 			#接收回合开始信息
 			while rProc.acquire():
 				if rProcess != sio.START:
 					rProc.wait()
 				else:
-					rbInfo=sio._recvs(connLogic)
+					rbInfo = sio._recvs(connLogic)
 					rProcess = sio.RBINFO_SET
 					rProc.notifyAll()
 					rProc.release()
@@ -219,7 +217,7 @@ class Slogic(threading.Thread):
 					rProc.wait()
 				else:
 					sio._sends(connLogic,rCommand)
-					reInfo=sio._recvs(connLogic)
+					reInfo = sio._recvs(connLogic)
 					rProc.release()
 					break
 				rProc.release()
@@ -227,7 +225,7 @@ class Slogic(threading.Thread):
 			#判断游戏是否结束，并调整游戏进度标记
 			if reInfo.over != -1:
 				gProc.acquire()
-				gProcess=sio.OVER
+				gProcess = sio.OVER
 				gProc.notifyAll()
 				gProc.release()
 
@@ -242,13 +240,13 @@ class Slogic(threading.Thread):
 class Sai(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
-		self.name='Thread-AI'
+		self.name = 'Thread-AI'
 	
 	def run(self):
 		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand
 		
 		#与AI进行socket连接
-		[(connAI1,address1),(connAI2,address2)]=_SocketConnect(sio.HOST,sio.AI_PORT,'AI',2)
+		[(connAI1,address1),(connAI2,address2)] = _SocketConnect(sio.HOST,sio.AI_PORT,'AI',2)
 		connAI=[connAI1,connAI2]
 		
 		#设置回合
@@ -277,7 +275,7 @@ class Sai(threading.Thread):
 				gProc.release()
 				break
 			gProc.release()
-		print 'ai init'
+
 		#初始化完毕，进入回合==============================================================
 		
 		#游戏回合阶段
@@ -290,10 +288,10 @@ class Sai(threading.Thread):
 				else:
 					sio._sends(connAI[rbInfo.id[0]],rbInfo)
 					try:
-						rCommand=sio._recvs(connAI[rbInfo.id[0]])
+						rCommand = sio._recvs(connAI[rbInfo.id[0]])
 					except socket.timeout:
-						rCommand=basic.Command()
-					rProcess=sio.RCOMMAND_SET
+						rCommand = basic.Command()
+					rProcess = sio.RCOMMAND_SET
 					rProc.notifyAll()
 					rProc.release()
 					break
