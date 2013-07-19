@@ -32,7 +32,9 @@ while reInfo.over == -1:
 	#展示
 	rbInfo=sio._recvs(conn)
 	rCommand,reInfo=sio._recvs(conn)
-
+winner=sio._recvs(conn)
+print 'Player ',winner,' win!'
+	
 conn.close()
 raw_input('ui end')
 

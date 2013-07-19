@@ -34,5 +34,8 @@ while roundEndInfo.over == -1:
 	sio._sends(conn,roundEndInfo)
 	print 'reInfo sent'
 
+#发送胜利方
+sio._sends(conn,1)
+
 conn.close()
 raw_input('logic end')

@@ -19,6 +19,7 @@ def _SocketConnect(host,port,connName,list = 1):
 	#设定AI连接最大时间
 	if connName == 'AI':
 		serv.settimeout(sio.AI_CONNECT_TIMEOUT)
+		print '\n',
 	else:
 		serv.settimeout(None)
 	serv.listen(list)
@@ -40,7 +41,7 @@ def _SocketConnect(host,port,connName,list = 1):
 			exit(1)
 		
 		#每有一个socket连接成功（两个AI算一个socket）则进程标记+1
-		print '\n%s%d connected: %s' %(connName,i+1,result[-1][1]),
+		print '\n%s%d connected: %s\n' %(connName,i+1,result[-1][1]),
 		if gProc.acquire():
 			gProcess += 1
 			gProc.notifyAll()
@@ -58,7 +59,7 @@ class Sui(threading.Thread):
 		self.name = 'Thread-UI'
 		
 	def run(self):
-		global gameOver,gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,ai_thread
+		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,ai_thread
 		
 		#定义回放列表用于生成回放文件，每个元素储存一个回合的信息
 		replayInfo=[]
@@ -121,7 +122,7 @@ class Sui(threading.Thread):
 		#初始化完毕，进入回合==============================================================
 		flag = False
 		#等待回合初始信息产生完毕
-		while gProcess != sio.OVER:
+		while gProcess < sio.OVER:
 			while rProc.acquire():
 				if rProcess == sio.START:
 					rProc.wait()
@@ -151,7 +152,18 @@ class Sui(threading.Thread):
 				rProc.release()
 			if flag:
 				break
-			
+		
+		#向UI发送胜利方
+		while gProc.acquire():
+			if gProcess != sio.WINNER_SET:
+				gProc.wait()
+			else:
+				sio._sends(connUI,winner)
+				gProc.notifyAll()
+				gProc.release()
+				break
+			gProc.release()
+		
 		#存回放文件
 		if sio.REPLAY_MODE:	
 			#检验回放文件目录
@@ -170,7 +182,7 @@ class Slogic(threading.Thread):
 		self.name = 'Thread-Logic'
 	
 	def run(self):
-		global gameOver,gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand
+		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner
 
 		connLogic,address = _SocketConnect(sio.HOST,sio.LOGIC_PORT,'Logic')
 		
@@ -235,6 +247,14 @@ class Slogic(threading.Thread):
 				rProc.notifyAll()
 				rProc.release()
 				break	
+		winner = sio._recvs(connLogic)
+		
+		#接收胜利方信息
+		gProc.acquire()
+		gProcess = sio.WINNER_SET
+		gProc.notifyAll()
+		gProc.release()
+		
 		connLogic.close()
 
 class Sai(threading.Thread):
@@ -279,7 +299,7 @@ class Sai(threading.Thread):
 		#初始化完毕，进入回合==============================================================
 		
 		#游戏回合阶段
-		while gProcess != sio.OVER:
+		while gProcess < sio.OVER:
 
 			#将回合开始信息发送至AI，并接收AI的命令
 			while rProc.acquire():
@@ -321,7 +341,7 @@ class Prog_Run(threading.Thread):
 		os.system('cmd /c start %s' %(self.progPath))
 
 
-global mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand
+global mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner
 
 aiInfo=[]
 heroType=[]

@@ -15,26 +15,27 @@ UI_FILE_NAME = '\\sclientui.py'
 LOGIC_FILE_NAME = '\\sclientlogic.py'
 
 #游戏/回合进程标记
-START=0
-U_L_WAITING=2
-U_L_CONNECTED=4
-AI_WAITING=5
-ONE_AI_CONNECTED=6
-CONNECTED=7
-MAP_SET=8
-HERO_TYPE_SET=9
-ROUND=10
-OVER=11
+START = 0
+U_L_WAITING = 2
+U_L_CONNECTED = 4
+AI_WAITING = 5
+ONE_AI_CONNECTED = 6
+CONNECTED = 7
+MAP_SET = 8
+HERO_TYPE_SET = 9
+ROUND = 10
+OVER = 11
+WINNER_SET = 12
 
-RBINFO_SET=1
-RCOMMAND_SET=2
-REINFO_SET=3
+RBINFO_SET = 1
+RCOMMAND_SET = 2
+REINFO_SET = 3
 
 
 
 class MapInfo:
 	def __init__(self,whole_map):
-		self.mapInfo=whole_map
+		self.mapInfo = whole_map
 #将对象以字符串形式通过指定连接发送
 def _sends(conn,data):
 	conn.send(cPickle.dumps(data))
@@ -45,7 +46,7 @@ def _recvs(conn):
 	result = ''
 	c = conn.recv(1)
 	while c != '|':
-		result=result + c
+		result = result + c
 		c = conn.recv(1)
 	if result == '':
 		return '|'
@@ -55,7 +56,7 @@ def _recvs(conn):
 #从文件读取地图信息
 def _ReadFile(filePath):
 	with open(filePath,'r') as read:
-		result=cPickle.load(read)
+		result = cPickle.load(read)
 	return result
 
 #将地图信息写入文件
@@ -64,8 +65,8 @@ def _WriteFile(fileInfo,filePath):
 		cPickle.dump(fileInfo,save)
 	
 def _ReplayFileName(aiInfo):
-	result=''
-	result += aiInfo[0]+'_vs_'+aiInfo[1]+'_'
+	result = ''
+	result += aiInfo[0] + '_vs_' + aiInfo[1] + '_'
 	result += time.strftime('%Y%m%d-%H-%M-%S')
 	result += '.rep'
 	return result
