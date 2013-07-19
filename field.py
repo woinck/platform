@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import basic
+import basic,sio
 
-class MapInfo:
-	def __init__(self,whole_map):
-		self.mapInfo=whole_map
 
 def construct_map(kind):
     if kind==basic.TURRET:
@@ -61,7 +58,7 @@ def _ReadMap(mapFile):
 			else:
 				base[i]+=[basic.Base_Unit(ord(c)-48,position)]
 			string=string[8:]
-	return MapInfo(whole_map)
+	return sio.MapInfo(whole_map)
 	#读入士兵    
 	#文件操作:whole_map表示地形类型    
 	#        base[0],base[1]列表表示士兵
