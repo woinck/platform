@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
+
 import random
 import time
 #常量采用全字母大写，变量及函数全字母小写，类名首字母大写，单词用‘—‘隔开
@@ -7,9 +8,10 @@ TURN_MAX=200
 COORDINATE_X_MAX=20
 COORDINATE_Y_MAX=20
 SOLDIERS_NUMBER=10
+TURRET_RANGE=range(3,10)
 
 TEMPLE_UP_TIME=9
-TRAP_COST=2
+TRAP_COST=3
 
 PLAIN=0#平原
 MOUNTAIN=1#山地
@@ -24,7 +26,7 @@ FIELD_EFFECT={PLAIN:[1,0,0,0,0],
 			  FOREST:[2,0,0,1,0],
 			  BARRIER:[1,0,0,0,0],
 			  TURRET:[1,2,0,0,0],
-			  TRAP:[1,-1,0,0,0],
+			  TRAP:[1,0,0,0,0],
 			  TEMPLE:[1,3,0,0,0],
 			  GEAR:[1,2,0,0,0]}
 #(move_consumption,score,attack_up,speed_up,defence_up)
@@ -69,7 +71,7 @@ class Map_Basic:
 		self.move_consumption=FIELD_EFFECT[kind][0]
 		#不同地形分数、消耗移动力不同
 		#(move_consumption,score,attack_up,speed_up,defence_up)
-	def effect(self,w):
+	def effect(self,w,m,score):
 		w.attack+=FIELD_EFFECT[self.type][2]
 		w.speed+=FIELD_EFFECT[self.type][3]
 		w.defence+=FIELD_EFFECT[self.type][4]
@@ -82,13 +84,19 @@ class Map_Basic:
 		#离开地形后能力恢复
 #基本地形：平原、山地、森林、屏障、陷阱
 class Map_Turret(Map_Basic):
-	def effect(self,w):
+	def __init__(self,kind):
+		self.type=kind
+		self.score=FIELD_EFFECT[kind][1]
+		self.move_consumption=FIELD_EFFECT[kind][0]
+		self.time=0
+	def effect(self,w,m,score):
 		if w.type==ARCHER:
-			w.attack_range+=range(3,10)
+			w.attack_range+=TURRET_RANGE
 		return []
 	def leave(self,w):
 		if w.type==ARCHER:
-			w.attack_range=[2]
+			w.attack_range=ABILITY[ARCHER][5]
+		self.time=0
 class Map_Gear(Map_Basic):
 	def __init__(self,kind,trap=[],barrier=[]):
 		self.type=kind
@@ -97,14 +105,17 @@ class Map_Gear(Map_Basic):
 		self.trap=trap
 		self.barrier=barrier
 		self.on=False
-	def effect(self,w):
+	def effect(self,w,m,score):
 		if not self.on:
 			for i in self.trap:
 				m[i[0]][i[1]]=Map_Trap(TRAP)
+			#陷阱出现
 			for i in self.barrier:
-				m[i[0]][i[1]]=Map_Basic(BARRIER)
+				m[i[0]][i[1]]=Map_Basic(BARRIER+PLANE-m[i[0]][i[1]].type)
+			#屏障产生或消失
 			self.on=True
-			return [(TRAP,x) for x in self.trap]+[(BARRIER,x) for x in self.barrier]
+			score+=self.score
+			return [(TRAP,x) for x in self.trap]+[(m[x[0]][x[1]].type,x) for x in self.barrier]
 		else:
 			return []
 class Map_Temple(Map_Basic):
@@ -114,7 +125,7 @@ class Map_Temple(Map_Basic):
 		self.move_consumption=FIELD_EFFECT[kind][0]
 		self.time=0
 		self.up=random.choice([1,2,3])
-	def effect(self,w):
+	def effect(self,w,m,score):
 		if self.time>=TEMPLE_UP_TIME and ((w.type<6 and w.up<BASE_UP_LIMIT) or (w.type>5 and w.up>HERO_UP_LIMIT)):
 			w.up+=1
 			if self.up==1:
@@ -125,7 +136,8 @@ class Map_Temple(Map_Basic):
 				w.defence+=1
 			self.time=0
 			self.up=random.choice([1,2,3])
-			return []
+			score+=self.score
+		return []
 #特殊地形：炮塔、机关、神庙
 class Base_Unit:
 	def __init__(self,kind,position=(0,0)):
@@ -145,7 +157,9 @@ class Base_Unit:
 		#移动至(x,y)
 	def attack(self,enemy):
 		r=random.uniform(0,100)
-		enemy.life-=(self.attack-enemy.defence)*(r<=(self.speed*3-enemy.speed*2))*BASE_ATTACK_EFFECT[self.type][enemy.type]
+		s=(r<=(self.speed*3-enemy.speed*2))
+		enemy.life-=(self.attack-enemy.defence)*s*ATTACK_EFFECT[self.type][enemy.type]
+		return s
 		#攻击 enemy	
 	def __lt__(self,orther):
 		return self.move_speed>orther.move_speed
@@ -165,20 +179,20 @@ class Begin_Info:
 		self.base=base
 		self.hero_type=hero_type
 class Round_Begin_Info:
-	def __init__(self,move_unit,move_range):
+	def __init__(self,move_unit,move_range,base):
 		self.id=move_unit
-		self.side=0
 		self.range=move_range
+		self.base=base
 class Command:
-	def __init__(self,move_position,order,target_id=0):
+	def __init__(self,order=0,move_position=0,target_id=0):
 		self.move=move_position
-		self.order=order
+		self.order=order#0:待机，1:攻击，2:技能
 		self.target=target_id
 class Round_End_Info:
-	def __init__(self,num,base,map_change,route,score,over=-1):
-		self.num=num
+	def __init__(self,base,map_change,route,attack_effect,score,over=-1):
 		self.base=base
 		self.change=map_change
 		self.route=route
 		self.score=score
 		self.over=over
+		self.effect=attack_effect

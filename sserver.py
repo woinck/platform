@@ -267,8 +267,8 @@ class Sai(threading.Thread):
 				if rProcess != sio.RBINFO_SET:
 					rProc.wait()
 				else:
-					sio._sends(connAI[rbInfo.side],rbInfo)
-					rCommand=sio._recvs(connAI[rbInfo.side])
+					sio._sends(connAI[rbInfo.id[0]],rbInfo)
+					rCommand=sio._recvs(connAI[rbInfo.id[0]])
 					rProcess=sio.RCOMMAND_SET
 					rProc.notifyAll()
 					rProc.release()
@@ -289,6 +289,15 @@ class Sai(threading.Thread):
 			connAI[i].send('|')
 			connAI[i].close()
 
+			
+class Prog_Run(threading.Thread):
+	def __init__(self,progPath):
+		threading.Thread.__init__(self)
+		self.progPath=progPath
+					
+	def run(self):
+		os.system('cmd /c start %s' %(self.progPath))
+
 
 global mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand
 
@@ -308,5 +317,11 @@ ui_thread.start()
 logic_thread = Slogic()
 logic_thread.start()
 ai_thread = Sai()
+
+ui_run = Prog_Run(os.getcwd() + sio.UI_FILE_NAME)
+#ui_run.start()
+logic_run = Prog_Run(os.getcwd() + sio.LOGIC_FILE_NAME)
+#logic_run.start()
+
 
 raw_input('')

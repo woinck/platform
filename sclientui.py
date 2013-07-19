@@ -12,11 +12,11 @@ except:
 	exit(1)
 	
 gameMode='ai_vs_ai'
-gameMapPath='C:\\Fomalhaut\\study\\school\\DS15\\program\\platform\\SampleMap.Map'
+gameMapPath='C:\\Users\\woinck\\Documents\\GitHub\\platform\\SampleMap.Map'
 gameAIPath=[]
 
-gameAIPath.append('C:\\Fomalhaut\\study\\school\\DS15\\program\\platform\\sclientai.pyw')
-gameAIPath.append('C:\\Fomalhaut\\study\\school\\DS15\\program\\platform\\sclientai.pyw')
+gameAIPath.append('C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py')
+gameAIPath.append('C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py')
 
 sio._sends(conn,(gameMode,gameMapPath,gameAIPath))
 
@@ -33,3 +33,4 @@ while reInfo.over == -1:
 
 conn.close()
 raw_input('ui end')
+

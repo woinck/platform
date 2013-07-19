@@ -2,10 +2,15 @@
 
 import cPickle,basic,time
 
+#一些常量
+AI_CMD_TIMEOUT=1
+AI_CONNECT_TIMEOUT=3
 HOST='127.0.0.1'
 LOGIC_PORT=8801
 UI_PORT=8802
 AI_PORT=8803
+UI_FILE_NAME='\\sclientui.py'
+LOGIC_FILE_NAME='\\sclientlogic.py'
 
 #游戏/回合进程标记
 START=0
@@ -23,9 +28,7 @@ RBINFO_SET=1
 RCOMMAND_SET=2
 REINFO_SET=3
 
-#一些常量
-AI_CMD_TIMEOUT=1
-AI_CONNECT_TIMEOUT=3
+
 
 class MapInfo:
 	def __init__(self,whole_map):
