@@ -1,16 +1,18 @@
 # -*- coding: UTF-8 -*-
 
 import cPickle,basic,time
+#模式控制
+REPLAY_MODE = 0 #此常量为1时会生成回放文件
 
 #一些常量
-AI_CMD_TIMEOUT=1
-AI_CONNECT_TIMEOUT=3
-HOST='127.0.0.1'
-LOGIC_PORT=8801
-UI_PORT=8802
-AI_PORT=8803
-UI_FILE_NAME='\\sclientui.py'
-LOGIC_FILE_NAME='\\sclientlogic.py'
+AI_CMD_TIMEOUT = 1
+AI_CONNECT_TIMEOUT = 3
+HOST = '127.0.0.1'
+LOGIC_PORT = 8801
+UI_PORT = 8802
+AI_PORT = 8803
+UI_FILE_NAME = '\\sclientui.py'
+LOGIC_FILE_NAME = '\\sclientlogic.py'
 
 #游戏/回合进程标记
 START=0
@@ -71,3 +73,6 @@ def _ReplayFileName(aiInfo):
 def _DefaultCommand(rbInfo):
 	return basic.Command((1,2),'attack',3)
 	
+#此函数为调试用
+def construct_base(map,hero_type):
+	return [[1,2,3,4],[8,7,6,5]]

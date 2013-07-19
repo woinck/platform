@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-import cPickle,socket,threading,time,sio,basic,os,field
+import cPickle,socket,threading,time,sio,basic,os
 
 #from sclientui import UI_Run
 #from sclientlogic import Logic_Run
@@ -136,14 +136,15 @@ class Sui(threading.Thread):
 					rProc.release()
 					break
 			rProc.release()
+		if sio.REPLAY_MODE:	
+			#检验回放文件目录
+			try:
+				os.mkdir(os.getcwd()+'\\ReplayFiles')
+			except:
+				pass
+			#写入回放
+			sio._WriteFile(replayInfo,os.getcwd()+'\\ReplayFiles\\'+sio._ReplayFileName(aiInfo))
 			
-		#检验回放文件目录
-		try:
-			os.mkdir(os.getcwd()+'\\ReplayFiles')
-		except:
-			pass
-		#写入回放
-		sio._WriteFile(replayInfo,os.getcwd()+'\\ReplayFiles\\'+sio._ReplayFileName(aiInfo))
 		connUI.close()
 		
 class Slogic(threading.Thread):
@@ -161,7 +162,7 @@ class Slogic(threading.Thread):
 			if gProcess < sio.HERO_TYPE_SET:
 				gProc.wait()
 			else:
-				base=field.construct_base(mapInfo,heroType)###########################
+				base=sio.construct_base(mapInfo,heroType)###########################
 				sio._sends(connLogic,basic.Begin_Info(mapInfo,base,heroType))
 				gProc.release()
 				break
@@ -268,7 +269,10 @@ class Sai(threading.Thread):
 					rProc.wait()
 				else:
 					sio._sends(connAI[rbInfo.id[0]],rbInfo)
-					rCommand=sio._recvs(connAI[rbInfo.id[0]])
+					try:
+						rCommand=sio._recvs(connAI[rbInfo.id[0]])
+					except socket.timeout:
+						rCommand=basic.Command()
 					rProcess=sio.RCOMMAND_SET
 					rProc.notifyAll()
 					rProc.release()
@@ -319,9 +323,9 @@ logic_thread.start()
 ai_thread = Sai()
 
 ui_run = Prog_Run(os.getcwd() + sio.UI_FILE_NAME)
-#ui_run.start()
+ui_run.start()
 logic_run = Prog_Run(os.getcwd() + sio.LOGIC_FILE_NAME)
-#logic_run.start()
+logic_run.start()
 
 
 raw_input('')
