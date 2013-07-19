@@ -24,12 +24,14 @@ sio._sends(conn,(gameMode,gameMapPath,gameAIPath))
 mapInfo,aiInfo=sio._recvs(conn)
 print 'map recv'
 #接收每回合信息
-rbInfo,rCommand,reInfo=sio._recvs(conn)
+rbInfo=sio._recvs(conn)
+rCommand,reInfo=sio._recvs(conn)
 while reInfo.over == -1:
 	print 'rInfo recv'
 	print 'over=',reInfo.over
 	#展示
-	rbInfo,rCommand,reInfo=sio._recvs(conn)
+	rbInfo=sio._recvs(conn)
+	rCommand,reInfo=sio._recvs(conn)
 
 conn.close()
 raw_input('ui end')

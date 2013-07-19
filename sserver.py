@@ -118,24 +118,43 @@ class Sui(threading.Thread):
 				break
 			gProc.release()
 		
+		print 'ui init'
 		#初始化完毕，进入回合==============================================================
-		
-		#等待回合所有信息产生完毕
-		while rProc.acquire():
-			if rProcess != sio.REINFO_SET:
-				rProc.wait()
-			else:
-				#发送回合信息
-				sio._sends(connUI,(rbInfo,rCommand,reInfo))
-				#回合信息存至回放列表中
-				replayInfo.append([rbInfo,rCommand,reInfo])
-				rProcess = sio.START
-				rProc.notifyAll()
-				#若游戏结束则跳出循环
-				if reInfo.over != -1:
+		flag = False
+		#等待回合初始信息产生完毕
+		while gProcess != sio.OVER:
+			while rProc.acquire():
+				if rProcess != sio.RBINFO_SET:
+					rProc.wait()
+				else:
+					#发送回合信息
+					sio._sends(connUI,rbInfo)
+					print 'rbInfo sent'
 					rProc.release()
 					break
-			rProc.release()
+				rProc.release()
+			
+			#等待回合所有信息产生完毕
+			while rProc.acquire():
+				if rProcess != sio.REINFO_SET:
+					rProc.wait()
+				else:
+					#发送回合信息
+					sio._sends(connUI,(rCommand,reInfo))
+					#回合信息存至回放列表中
+					replayInfo.append([rbInfo,rCommand,reInfo])
+					rProcess = sio.START
+					rProc.notifyAll()
+					#若游戏结束则跳出循环
+					if reInfo.over != -1:###################################在这里改跳出二层循环！！
+						flag = True
+					rProc.release()
+					break
+				rProc.release()
+			if flag:
+				break
+			
+		#存回放文件
 		if sio.REPLAY_MODE:	
 			#检验回放文件目录
 			try:
@@ -176,7 +195,8 @@ class Slogic(threading.Thread):
 				gProc.release()
 				break
 			gProc.release()
-			
+		
+		print 'logic init'
 		#初始化完毕，进入回合==============================================================	
 		
 		while gProcess != sio.OVER:
@@ -257,7 +277,7 @@ class Sai(threading.Thread):
 				gProc.release()
 				break
 			gProc.release()
-		
+		print 'ai init'
 		#初始化完毕，进入回合==============================================================
 		
 		#游戏回合阶段

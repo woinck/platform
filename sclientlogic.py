@@ -15,6 +15,7 @@ roundEndInfo=basic.Round_End_Info(beginInfo.base,(1,2,3),'route1',(1,0),(100,100
 roundBeginInfo=basic.Round_Begin_Info((0,3),[(1,1),(2,2)],beginInfo.base)
 i=0
 print roundEndInfo.over
+
 while roundEndInfo.over == -1:
 	i+=1
 	#发送每回合的开始信息
