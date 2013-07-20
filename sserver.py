@@ -9,6 +9,7 @@ def _SocketConnect(host,port,connName,list = 1):
 	global gProcess,gProc
 	result = []
 	serv = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
 	try:
 		serv.bind((host,port))
 	except:
@@ -59,7 +60,9 @@ class Sui(threading.Thread):
 		self.name = 'Thread-UI'
 		
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,ai_thread
+		global gProcess,rProcess,mapInfo,heroType,aiInfo
+		global rbInfo,reInfo,rCommand
+		global ai_thread,logic_thread,logc_run
 		
 		#定义回放列表用于生成回放文件，每个元素储存一个回合的信息
 		replayInfo=[]
@@ -70,12 +73,17 @@ class Sui(threading.Thread):
 		#发送游戏模式、地图和AI信息
 		gameMode,gameMapPath,gameAIPath=sio._recvs(connUI)
 		
+		if gameMode <= sio.PLAYER_VS_PLAYER:
+			logic_run.start()
+			time.sleep(0.1)
+			logic_thread.start()
+		
 		#读取地图文件
 		mapInfo=sio._ReadFile(gameMapPath)
 			
 		#运行AI线程及文件
 		while gProc.acquire():
-			if gProcess != sio.U_L_CONNECTED:
+			if gProcess != sio.LOGIC_CONNECTED:
 				gProc.wait()
 			else:
 				#运行AI连接线程
@@ -184,8 +192,22 @@ class Slogic(threading.Thread):
 	def run(self):
 		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner
 
-		connLogic,address = _SocketConnect(sio.HOST,sio.LOGIC_PORT,'Logic')
+		#connLogic,address = _SocketConnect(sio.HOST,sio.LOGIC_PORT,'Logic')
 		
+		connLogic = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		try:
+			connLogic.connect((sio.HOST,sio.LOGIC_PORT))
+			print 'Logic connected'
+		except:
+			print 'logic connection failed, the program will exit...'
+			time.sleep(2)
+			exit(1)
+			
+		if gProc.acquire():
+			gProcess += 2
+			gProc.notifyAll()
+			gProc.release()
+			
 		#发送游戏初始信息
 		while gProc.acquire():
 			if gProcess < sio.HERO_TYPE_SET:
@@ -306,6 +328,15 @@ class Sai(threading.Thread):
 				if rProcess != sio.RBINFO_SET:
 					rProc.wait()
 				else:
+					#清空接收区缓存（其中可能有因超时而没收到的上一回合的命令）
+					connAI[rbInfo.id[0]].settimeout(0)
+					try:
+						connAI[rbInfo.id[0]].recv(1024)
+					except:
+						pass
+					connAI[rbInfo.id[0]].settimeout(sio.AI_CMD_TIMEOUT)
+					
+					
 					sio._sends(connAI[rbInfo.id[0]],rbInfo)
 					try:
 						rCommand = sio._recvs(connAI[rbInfo.id[0]])
@@ -355,15 +386,12 @@ rProc=threading.Condition()
 
 #运行线程		
 ui_thread = Sui()
-ui_thread.start()
-logic_thread = Slogic()
-logic_thread.start()
 ai_thread = Sai()
-
 ui_run = Prog_Run(os.getcwd() + sio.UI_FILE_NAME)
-ui_run.start()
 logic_run = Prog_Run(os.getcwd() + sio.LOGIC_FILE_NAME)
-logic_run.start()
+logic_thread = Slogic()
 
+ui_thread.start()
+ui_run.start()
 
 raw_input('')

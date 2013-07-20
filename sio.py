@@ -1,12 +1,13 @@
 # -*- coding: UTF-8 -*-
 
 import cPickle,basic,time
-#模式控制
+
+#游戏运行参数
 REPLAY_MODE = 0 #此常量为1时会生成回放文件
+AI_CMD_TIMEOUT = 1 # AI命令最长等待时间，超过则不再接收
+AI_CONNECT_TIMEOUT = 3
 
 #一些常量
-AI_CMD_TIMEOUT = 1
-AI_CONNECT_TIMEOUT = 3
 HOST = '127.0.0.1'
 LOGIC_PORT = 8801
 UI_PORT = 8802
@@ -14,10 +15,15 @@ AI_PORT = 8803
 UI_FILE_NAME = '\\sclientui.py'
 LOGIC_FILE_NAME = '\\sclientlogic.py'
 
+#游戏模式
+AI_VS_AI = 0
+PLAYER_VS_AI = 1
+PLAYER_VS_PLAYER = 2
+
 #游戏/回合进程标记
 START = 0
-U_L_WAITING = 2
-U_L_CONNECTED = 4
+UI_CONNECTED = 2
+LOGIC_CONNECTED = 4
 AI_WAITING = 5
 ONE_AI_CONNECTED = 6
 CONNECTED = 7

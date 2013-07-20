@@ -1,14 +1,17 @@
 # -*- coding: UTF-8 -*-
 import socket,cPickle,sio,time,basic
 print 'logic'
-conn=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+serv=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 try:
-	conn.connect((sio.HOST,sio.LOGIC_PORT))
+	serv.bind((sio.HOST,sio.LOGIC_PORT))
 except:
-	print 'failed to connect, the program will exit...'
-	time.sleep(2)
+	print 'port occupied, the program will exit...'
+	time.sleep(3)
 	exit(1)
-
+serv.listen(1)
+print 'waiting for platform connection...\n',
+conn,address = serv.accept()
+	
 base=[]
 beginInfo=sio._recvs(conn)
 roundEndInfo=basic.Round_End_Info(beginInfo.base,(1,2,3),'route1',(1,0),(100,100),-1)
