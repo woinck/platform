@@ -11,6 +11,8 @@ except:
 serv.listen(1)
 print 'waiting for platform connection...\n',
 conn,address = serv.accept()
+print 'platform connected: %s' %(str(address))
+
 	
 base=[]
 beginInfo=sio._recvs(conn)

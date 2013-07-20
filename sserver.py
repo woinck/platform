@@ -25,13 +25,13 @@ def _SocketConnect(host,port,connName,list = 1):
 		serv.settimeout(None)
 	serv.listen(list)
 	print 'waiting for %s connection...\n' %(connName),
-	
+	'''
 	#每有一个socket进入等待连接的状态，进程标记+1
 	if gProc.acquire():
 		gProcess += 1
 		gProc.notifyAll()
 		gProc.release()
-		
+	'''	
 	for i in range(list):
 		#进行连接
 		try:
@@ -204,7 +204,7 @@ class Slogic(threading.Thread):
 			exit(1)
 			
 		if gProc.acquire():
-			gProcess += 2
+			gProcess += 1
 			gProc.notifyAll()
 			gProc.release()
 			
