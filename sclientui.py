@@ -1,7 +1,53 @@
 # -*- coding: utf-8 -*-
-import socket,cPickle,sio,time,basic
+import socket,cPickle,sio,time,threading,basic
 print 'ui'
-#def UI_Run():
+	
+class UI_Player(threading.Thread):
+	def __init__(self,num):
+		threading.Thread.__init__(self)
+		self.name = 'Thread-Player'
+		self.num = num
+		
+	def GetHeroType(self,mapInfo):
+			# time for player to choose herotype here!!
+			result = (6,6)
+			return result
+			
+	def AI(self,rBeginInfo):
+			cmd=basic.Command()
+			# time for player to make a command here!!
+			return cmd
+	
+	def run(self):
+		print 'ai thread called ##################################################'
+		# 玩家输入名称
+		aiInfo = 'Player'
+
+		conn = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
+		try:
+			conn.connect((sio.HOST,sio.AI_PORT))
+		except:
+			print 'failed to connect, the program will exit...'
+			time.sleep(2)
+			exit(1)
+
+		mapInfo = sio._recvs(conn)
+		
+		#此处展示地图
+		
+		sio._sends(conn,(aiInfo,self.GetHeroType(mapInfo)))
+
+		while True:
+			rBeginInfo = sio._recvs(conn)
+			print 'rbInfo got'
+			if rBeginInfo != '|':
+				sio._sends(conn,self.AI(rBeginInfo))
+				print 'cmd sent'
+			else:
+				break
+		conn.close()
+		
 	
 conn = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 try:
@@ -11,18 +57,31 @@ except:
 	time.sleep(2)
 	exit(1)
 	
-gameMode = sio.AI_VS_AI
+gameMode = sio.PLAYER_VS_PLAYER
 gameMapPath = 'C:\\Users\\woinck\\Documents\\GitHub\\platform\\SampleMap.Map'
-gameAIPath=[]
 
-gameAIPath.append('C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py')
-gameAIPath.append('C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py')
+gameAIPath=[]
+#若某方（1P,2P）由玩家控制，请将其AIPath设为 None
+aiPath = 'C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py'
+gameAIPath.append(None)
+gameAIPath.append(None)
 
 sio._sends(conn,(gameMode,gameMapPath,gameAIPath))
+
+if gameMode == sio.PLAYER_VS_PLAYER or gameMode == sio.PLAYER_VS_AI:
+	conn.recv(1)
+	cpu_0 = UI_Player(0)
+	cpu_0.start()
+	if gameMode == sio.PLAYER_VS_PLAYER:
+		conn.recv(1)
+		cpu_1 = UI_Player(1)
+		cpu_1.start()
 
 #接收AI与地图信息
 mapInfo,aiInfo = sio._recvs(conn)
 print 'map recv'
+
+
 #接收每回合信息
 rbInfo = sio._recvs(conn)
 rCommand,reInfo = sio._recvs(conn)
@@ -37,4 +96,6 @@ print 'Player ',winner,' win!'
 	
 conn.close()
 raw_input('ui end')
+
+
 

@@ -3,6 +3,7 @@
 import cPickle,basic,time
 
 #游戏运行参数
+DEBUG_MODE = 1
 REPLAY_MODE = 0 #此常量为1时会生成回放文件
 AI_CMD_TIMEOUT = 1 # AI命令最长等待时间，超过则不再接收
 AI_CONNECT_TIMEOUT = 3

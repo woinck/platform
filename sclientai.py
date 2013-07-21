@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import socket,cPickle,sio,time,basic,os
-print 'ai'
+print 'ai2'
 #AI需要完成的函数有两个：GetHeroType() 与AI()
 def GetHeroType(mapInfo):
 	return (6,6)

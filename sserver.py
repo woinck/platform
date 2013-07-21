@@ -19,6 +19,7 @@ def _SocketConnect(host,port,connName,list = 1):
 		
 	#设定AI连接最大时间
 	if connName == 'AI':
+		print 'waiting ai'
 		serv.settimeout(sio.AI_CONNECT_TIMEOUT)
 		print '\n',
 	else:
@@ -59,8 +60,14 @@ class Sui(threading.Thread):
 		threading.Thread.__init__(self)
 		self.name = 'Thread-UI'
 		
+	def run_AI(self,conn,AIPath):
+		if AIPath == None:
+			conn.send('|')
+		else:
+			os.system('cmd /c start %s' %(AIPath))
+	
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo
+		global gProcess,rProcess,mapInfo,heroType,aiInfo,gameMode
 		global rbInfo,reInfo,rCommand
 		global ai_thread,logic_thread,logc_run
 		
@@ -73,9 +80,11 @@ class Sui(threading.Thread):
 		#发送游戏模式、地图和AI信息
 		gameMode,gameMapPath,gameAIPath=sio._recvs(connUI)
 		
+		
 		if gameMode <= sio.PLAYER_VS_PLAYER:
-			logic_run.start()
-			time.sleep(0.1)
+			if not sio.DEBUG_MODE:
+				logic_run.start()
+				time.sleep(0.1)
 			logic_thread.start()
 		
 		#读取地图文件
@@ -89,7 +98,7 @@ class Sui(threading.Thread):
 				#运行AI连接线程
 				ai_thread.start()
 				#运行AI1
-				os.system('cmd /c start %s' %(gameAIPath[0]))
+				self.run_AI(connUI,gameAIPath[0])
 				gProc.release()
 				break
 			gProc.release()
@@ -99,7 +108,7 @@ class Sui(threading.Thread):
 				gProc.wait()
 			else:
 				#运行AI2
-				os.system('cmd /c start %s' %(gameAIPath[1]))
+				self.run_AI(connUI,gameAIPath[1])
 				gProc.release()
 				break
 			gProc.release()
@@ -153,7 +162,7 @@ class Sui(threading.Thread):
 					rProcess = sio.START
 					rProc.notifyAll()
 					#若游戏结束则跳出循环
-					if reInfo.over != -1:###################################在这里改跳出二层循环！！
+					if reInfo.over != -1:
 						flag = True
 					rProc.release()
 					break
@@ -285,13 +294,13 @@ class Sai(threading.Thread):
 		self.name = 'Thread-AI'
 	
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand
+		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,gameMode
 		
 		#与AI进行socket连接
 		[(connAI1,address1),(connAI2,address2)] = _SocketConnect(sio.HOST,sio.AI_PORT,'AI',2)
 		connAI=[connAI1,connAI2]
 		
-		#设置回合
+		#设置命令限时
 		for i in connAI:
 			i.settimeout(sio.AI_CMD_TIMEOUT)
 		
@@ -372,7 +381,7 @@ class Prog_Run(threading.Thread):
 		os.system('cmd /c start %s' %(self.progPath))
 
 
-global mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner
+global mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner,gameMode
 
 aiInfo=[]
 heroType=[]
@@ -392,6 +401,7 @@ logic_run = Prog_Run(os.getcwd() + sio.LOGIC_FILE_NAME)
 logic_thread = Slogic()
 
 ui_thread.start()
-ui_run.start()
+if not sio.DEBUG_MODE:
+	ui_run.start()
 
 raw_input('')
