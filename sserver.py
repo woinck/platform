@@ -67,7 +67,7 @@ class Sui(threading.Thread):
 			os.system('cmd /c start %s' %(AIPath))
 	
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo,gameMode
+		global gProcess,rProcess,mapInfo,heroType,aiInfo,gameMode,timeoutSwitch
 		global rbInfo,reInfo,rCommand
 		global ai_thread,logic_thread,logc_run
 		
@@ -79,6 +79,13 @@ class Sui(threading.Thread):
 		
 		#发送游戏模式、地图和AI信息
 		gameMode,gameMapPath,gameAIPath=sio._recvs(connUI)
+		
+		#设置AI超时开关
+		for i in range(2):
+			if gameAIPath[i]==None:
+				timeoutSwitch[i]=0
+			else:
+				timeoutSwitch[i]=1
 		
 		
 		if gameMode <= sio.PLAYER_VS_PLAYER:
@@ -294,15 +301,20 @@ class Sai(threading.Thread):
 		self.name = 'Thread-AI'
 	
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,gameMode
+		global gProcess,rProcess,mapInfo,heroType,aiInfo
+		global rbInfo,reInfo,rCommand
+		global gameMode,timeoutSwitch
 		
 		#与AI进行socket连接
 		[(connAI1,address1),(connAI2,address2)] = _SocketConnect(sio.HOST,sio.AI_PORT,'AI',2)
 		connAI=[connAI1,connAI2]
 		
 		#设置命令限时
-		for i in connAI:
-			i.settimeout(sio.AI_CMD_TIMEOUT)
+		for i in range(2):
+			if timeoutSwitch[i]==1:
+				connAI[i].settimeout(sio.AI_CMD_TIMEOUT)
+			else:
+				connAI[i].settimeout(None)
 		
 		#向AI传输地图信息并接收AI的反馈
 		while gProc.acquire():
@@ -381,11 +393,14 @@ class Prog_Run(threading.Thread):
 		os.system('cmd /c start %s' %(self.progPath))
 
 
-global mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner,gameMode
+global mapInfo,heroType,aiInfo
+global rbInfo,reInfo,rCommand
+global winner,gameMode,timeoutSwitch
 
 aiInfo=[]
 heroType=[]
 reInfo=None
+timeoutSwitch=[1,1]
 
 #设置进度标记
 gProcess = sio.START

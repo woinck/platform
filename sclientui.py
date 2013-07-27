@@ -34,7 +34,7 @@ class UI_Player(threading.Thread):
 
 		mapInfo = sio._recvs(conn)
 		
-		#此处展示地图
+		#此处向玩家展示地图
 		
 		sio._sends(conn,(aiInfo,self.GetHeroType(mapInfo)))
 

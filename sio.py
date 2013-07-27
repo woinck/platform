@@ -3,25 +3,25 @@
 import cPickle,basic,time
 
 #游戏运行参数
-DEBUG_MODE = 1
+DEBUG_MODE = 1 # 为0时,启动游戏只需运行sserver.py即可,程序将自动调用ui及logic文件;为1时先运行logic,再运行sserver,再运行ui
 REPLAY_MODE = 0 #此常量为1时会生成回放文件
 AI_CMD_TIMEOUT = 1 # AI命令最长等待时间，超过则不再接收
-AI_CONNECT_TIMEOUT = 3
+AI_CONNECT_TIMEOUT = 3 # 与AI程序进行对接时的最长等待时间
 
-#一些常量
-HOST = '127.0.0.1'
-LOGIC_PORT = 8801
-UI_PORT = 8802
-AI_PORT = 8803
-UI_FILE_NAME = '\\sclientui.py'
-LOGIC_FILE_NAME = '\\sclientlogic.py'
-
-#游戏模式
+#游戏模式,界面组请关注!
 AI_VS_AI = 0
 PLAYER_VS_AI = 1
 PLAYER_VS_PLAYER = 2
 
-#游戏/回合进程标记
+#一些常量
+HOST = '127.0.0.1' # 主机地址
+LOGIC_PORT = 8801 # logic 连接端口
+UI_PORT = 8802 # UI 连接端口
+AI_PORT = 8803 # AI 连接端口
+UI_FILE_NAME = '\\sclientui.py' # UI程序文件名,若有变化请修改此常量!
+LOGIC_FILE_NAME = '\\sclientlogic.py' # logic 程序文件名,若有变化请修改此常量!
+
+#游戏/回合进程标记,对战流程用
 START = 0
 UI_CONNECTED = 1
 LOGIC_CONNECTED = 2
