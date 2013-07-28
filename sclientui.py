@@ -84,6 +84,7 @@ print 'map recv'
 
 #接收每回合信息
 rbInfo = sio._recvs(conn)
+#展示
 rCommand,reInfo = sio._recvs(conn)
 while reInfo.over == -1:
 	print 'rInfo recv'
