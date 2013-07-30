@@ -1,198 +1,208 @@
-# -*- coding: UTF-8 -*-
-
+ï»¿# -*- coding: UTF-8 -*-
 import random
 import time
-#³£Á¿²ÉÓÃÈ«×ÖÄ¸´óĞ´£¬±äÁ¿¼°º¯ÊıÈ«×ÖÄ¸Ğ¡Ğ´£¬ÀàÃûÊ××ÖÄ¸´óĞ´£¬µ¥´ÊÓÃ¡®¡ª¡®¸ô¿ª
+#å¸¸é‡é‡‡ç”¨å…¨å­—æ¯å¤§å†™ï¼Œå˜é‡åŠå‡½æ•°å…¨å­—æ¯å°å†™ï¼Œç±»åé¦–å­—æ¯å¤§å†™ï¼Œå•è¯ç”¨â€˜â€”â€˜éš”å¼€
 random.seed(time.time())
-TURN_MAX=200
-COORDINATE_X_MAX=20
-COORDINATE_Y_MAX=20
-SOLDIERS_NUMBER=10
-TURRET_RANGE=range(3,10)
+TURN_MAX = 200
+COORDINATE_X_MAX = 20
+COORDINATE_Y_MAX = 20
+SOLDIERS_NUMBER = 10
 
-TEMPLE_UP_TIME=9
-TRAP_COST=3
+TURRET_RANGE = range(3,11)
+TEMPLE_UP_TIME = 9
+TURRET_SCORE_TIME = 5
+TRAP_COST = 3
 
-PLAIN=0#Æ½Ô­
-MOUNTAIN=1#É½µØ
-FOREST=2#É­ÁÖ
-BARRIER=3#ÆÁÕÏ
-TURRET=4#ÅÚËş
-TRAP=5#ÏİÚå
-TEMPLE=6#ÉñÃí
-GEAR=7#»ú¹Ø
-FIELD_EFFECT={PLAIN:[1,0,0,0,0],
-			  MOUNTAIN:[2,0,0,0,1],
-			  FOREST:[2,0,0,1,0],
-			  BARRIER:[1,0,0,0,0],
-			  TURRET:[1,2,0,0,0],
-			  TRAP:[1,0,0,0,0],
-			  TEMPLE:[1,3,0,0,0],
-			  GEAR:[1,2,0,0,0]}
-#(move_consumption,score,attack_up,speed_up,defence_up)
-HERO_UP_LIMIT=5
-BASE_UP_LIMIT=3
-HERO_SCORE=3
-BASE_SCORE=1
+PLAIN = 0#å¹³åŸ
+MOUNTAIN = 1#å±±åœ°
+FOREST = 2#æ£®æ—
+BARRIER = 3#å±éšœ
+TURRET = 4#ç‚®å¡”
+TRAP = 5#é™·é˜±
+TEMPLE = 6#ç¥åº™
+GEAR = 7#æœºå…³
+FIELD_EFFECT = {PLAIN:(1,0,0,0,0),
+                MOUNTAIN:(2,0,0,0,1),
+                FOREST:(2,0,0,1,0),
+                BARRIER:(1,0,0,0,0),
+                TURRET:(1,2,0,0,0),
+                TRAP:(1,0,0,0,0),
+                TEMPLE:(1,3,0,0,0),
+                GEAR:(1,2,0,0,0)}
+#(move_consumption, score, attack_up, speed_up, defence_up)
+HERO_UP_LIMIT = 5
+BASE_UP_LIMIT = 3
+HERO_SCORE = 3
+BASE_SCORE = 1
 
-SABER=0#½£Ê¿
-LANCER=1#Ç¹±ø
-ARCHER=2#¹­±ø
-DRAGON_RIDER=3#·ÉÆï±ø
-WARRIOR=4#Õ½Ê¿
-WIZARD=5#·¨Ê¦
-HERO_1=6
-HERO_2=7
-HERO_3=8
-ABILITY={SABER:[25,18,95,12,6,[1],5],
-		 LANCER:[25,17,90,13,7,[1],4],
-		 ARCHER:[25,17,90,12,6,[2],3],
-		 DRAGON_RIDER:[21,15,95,10,8,[1],2],
-		 WARRIOR:[30,20,85,15,5,[1],1],
-		 WIZARD:[21,10,90,12,6,[],0],
-		 HERO_1:[55,17,90,15,5,[1],6],
-		 HERO_2:[40,20,100,13,6,[1],6],
-		 HERO_3:[45,20,95,14,7,[1,2],6]}
-#(LIFE,ATTACK,SPEED,DEFENCE,MOVE_RANGE,ATTACK_RANGE,MOVE_SPEED)
-#WIZARD:²»¿É¹¥»÷ATTACK±íÊ¾»Ø¸´ÉúÃüÊı
-ATTACK_EFFECT={SABER:{SABER:1,LANCER:0.5,ARCHER:1,DRAGON_RIDER:0.5,WARRIOR:1.5,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1},
-			   LANCER:{SABER:1.5,LANCER:1,ARCHER:1,DRAGON_RIDER:1,WARRIOR:0.5,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1},
-			   ARCHER:{SABER:1,LANCER:1,ARCHER:1,DRAGON_RIDER:2,WARRIOR:1,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1},
-			   DRAGON_RIDER:{SABER:1.5,LANCER:1,ARCHER:1,DRAGON_RIDER:1,WARRIOR:0.5,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1},
-			   WARRIOR:{SABER:0.5,LANCER:1.5,ARCHER:1,DRAGON_RIDER:1.5,WARRIOR:1,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1},
-			   HERO_1:{SABER:1,LANCER:1,ARCHER:1,DRAGON_RIDER:2,WARRIOR:1,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1},
-			   HERO_2:{SABER:1,LANCER:1,ARCHER:1,DRAGON_RIDER:2,WARRIOR:1,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1},
-			   HERO_3:{SABER:1,LANCER:1,ARCHER:1,DRAGON_RIDER:2,WARRIOR:1,WIZARD:1,HERO_1:1,HERO_2:1,HERO_3:1}}
-#Ïà¿ËĞÔ
+SABER = 0#å‰‘å£«
+LANCER = 1#æªå…µ
+ARCHER = 2#å¼“å…µ
+DRAGON_RIDER = 3#é£éª‘å…µ
+WARRIOR = 4#æˆ˜å£«
+WIZARD = 5#æ³•å¸ˆ
+HERO_1 = 6
+HERO_2 = 7
+HERO_3 = 8
+ABILITY = {SABER:(25,18,95,12,6,[1],5),
+           LANCER:(25,17,90,13,7,[1],4),
+           ARCHER:(25,17,90,12,6,[2],3),
+           DRAGON_RIDER:(21,15,95,10,8,[1],2),
+           WARRIOR:(30,20,85,15,5,[1],1),
+           WIZARD:(21,10,90,12,6,[],0),
+           HERO_1:(55,17,90,15,5,[1],6),
+           HERO_2:(40,20,100,13,6,[1],6),
+           HERO_3:(45,20,95,14,7,[1,2],6)}
+#(LIFE, ATTACK, SPEED, DEFENCE, MOVE_RANGE, ATTACK_RANGE, MOVE_SPEED)
+#WIZARD:ä¸å¯æ”»å‡»ï¼ŒATTACKè¡¨ç¤ºå›å¤ç”Ÿå‘½æ•°
+ATTACK_EFFECT = {SABER:{SABER:1, LANCER:0.5, ARCHER:1, DRAGON_RIDER:0.5, WARRIOR:1.5, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1},
+                 LANCER:{SABER:1.5, LANCER:1, ARCHER:1, DRAGON_RIDER:1, WARRIOR:0.5, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1},
+                 ARCHER:{SABER:1, LANCER:1, ARCHER:1, DRAGON_RIDER:2, WARRIOR:1, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1},
+                 DRAGON_RIDER:{SABER:1.5, LANCER:1, ARCHER:1, DRAGON_RIDER:1, WARRIOR:0.5, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1},
+                 WARRIOR:{SABER:0.5, LANCER:1.5, ARCHER:1, DRAGON_RIDER:1.5, WARRIOR:1, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1},
+                 HERO_1:{SABER:1, LANCER:1, ARCHER:1, DRAGON_RIDER:2, WARRIOR:1, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1},
+                 HERO_2:{SABER:1, LANCER:1, ARCHER:1, DRAGON_RIDER:2, WARRIOR:1, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1},
+                 HERO_3:{SABER:1, LANCER:1, ARCHER:1, DRAGON_RIDER:2, WARRIOR:1, WIZARD:1, HERO_1:1, HERO_2:1, HERO_3:1}}
+#ç›¸å…‹æ€§
 class Map_Basic:
-	def __init__(self,kind):
-		self.type=kind
-		self.score=FIELD_EFFECT[kind][1]
-		self.move_consumption=FIELD_EFFECT[kind][0]
-		#²»Í¬µØĞÎ·ÖÊı¡¢ÏûºÄÒÆ¶¯Á¦²»Í¬
-		#(move_consumption,score,attack_up,speed_up,defence_up)
-	def effect(self,w,m,score):
-		w.attack+=FIELD_EFFECT[self.type][2]
-		w.speed+=FIELD_EFFECT[self.type][3]
-		w.defence+=FIELD_EFFECT[self.type][4]
-		return []
-		#µØĞÎĞ§¹û
-	def leave(self,w):
-		w.attack-=FIELD_EFFECT[self.type][2]
-		w.speed-=FIELD_EFFECT[self.type][3]
-		w.defence-=FIELD_EFFECT[self.type][4]
-		#Àë¿ªµØĞÎºóÄÜÁ¦»Ö¸´
-#»ù±¾µØĞÎ£ºÆ½Ô­¡¢É½µØ¡¢É­ÁÖ¡¢ÆÁÕÏ¡¢ÏİÚå
+    '''åŸºæœ¬åœ°å½¢ï¼šå¹³åŸã€å±±åœ°ã€æ£®æ—ã€å±éšœã€é™·é˜±
+    FIELD_EFFECT(move_consumption, score, attack_up, speed_up, defence_up)'''
+    def __init__(self, kind):
+        self.kind = kind
+        self.score = FIELD_EFFECT[kind][1]
+        self.move_consumption = FIELD_EFFECT[kind][0]
+    def effect(self, w, m, score):
+        '''åœ°å½¢æ•ˆæœ'''
+        w.attack += FIELD_EFFECT[self.kind][2]
+        w.speed += FIELD_EFFECT[self.kind][3]
+        w.defence += FIELD_EFFECT[self.kind][4]
+        return []
+    def leave(self, w):
+        '''ç¦»å¼€åœ°å½¢åèƒ½åŠ›æ¢å¤'''
+        w.attack -= FIELD_EFFECT[self.kind][2]
+        w.speed -= FIELD_EFFECT[self.kind][3]
+        w.defence -= FIELD_EFFECT[self.kind][4]
 class Map_Turret(Map_Basic):
-	def __init__(self,kind):
-		self.type=kind
-		self.score=FIELD_EFFECT[kind][1]
-		self.move_consumption=FIELD_EFFECT[kind][0]
-		self.time=0
-	def effect(self,w,m,score):
-		if w.type==ARCHER:
-			w.attack_range+=TURRET_RANGE
-		return []
-	def leave(self,w):
-		if w.type==ARCHER:
-			w.attack_range=ABILITY[ARCHER][5]
-		self.time=0
+    '''ç‰¹æ®Šåœ°å½¢ï¼šç‚®å¡”
+    FIELD_EFFECT(move_consumption, score, attack_up, speed_up, defence_up)'''
+    def __init__(self, kind):
+        self.kind = kind
+        self.score = FIELD_EFFECT[kind][1]
+        self.move_consumption = FIELD_EFFECT[kind][0]
+        self.time = 0
+    def effect(self, w, m, score):
+        if w.kind == ARCHER:
+            w.attack_range = TURRET_RANGE
+        return []
+    def leave(self, w):
+        if w.kind == ARCHER:
+            w.attack_range = ABILITY[ARCHER][5]
+        self.time = 0
 class Map_Gear(Map_Basic):
-	def __init__(self,kind,trap=[],barrier=[]):
-		self.type=kind
-		self.score=FIELD_EFFECT[kind][1]
-		self.move_consumption=FIELD_EFFECT[kind][0]
-		self.trap=trap
-		self.barrier=barrier
-		self.on=False
-	def effect(self,w,m,score):
-		if not self.on:
-			for i in self.trap:
-				m[i[0]][i[1]]=Map_Trap(TRAP)
-			#ÏİÚå³öÏÖ
-			for i in self.barrier:
-				m[i[0]][i[1]]=Map_Basic(BARRIER+PLANE-m[i[0]][i[1]].type)
-			#ÆÁÕÏ²úÉú»òÏûÊ§
-			self.on=True
-			score+=self.score
-			return [(TRAP,x) for x in self.trap]+[(m[x[0]][x[1]].type,x) for x in self.barrier]
-		else:
-			return []
+    '''ç‰¹æ®Šåœ°å½¢ï¼šæœºå…³
+    FIELD_EFFECT(move_consumption, score, attack_up, speed_up, defence_up)'''
+    def __init__(self, kind, trap=[], barrier=[]):
+        self.kind = kind
+        self.score = FIELD_EFFECT[kind][1]
+        self.move_consumption = FIELD_EFFECT[kind][0]
+        self.trap = trap #é™·é˜±è§¦å‘,trapä¸ºåæ ‡åˆ—è¡¨
+        self.barrier = barrier #äº§ç”Ÿæˆ–æ¶ˆé™¤å±éšœï¼Œbarrierä¸ºåæ ‡åˆ—è¡¨
+        self.on = False #æœªå¼€å¯çŠ¶æ€
+    def effect(self, w, m, score):
+        if not self.on:
+            for i in self.trap:
+                m[i[0]][i[1]] = Map_Trap(TRAP)
+            #é™·é˜±å‡ºç°
+            for i in self.barrier:
+                m[i[0]][i[1]] = Map_Basic(BARRIER + PLANE - m[i[0]][i[1]].kind)
+            #å±éšœäº§ç”Ÿæˆ–æ¶ˆå¤±
+            self.on = True
+            score[0] += self.score
+            return [(TRAP, x) for x in self.trap] + [(m[x[0]][x[1]].kind, x) for x in self.barrier]
+        else:
+            return []
 class Map_Temple(Map_Basic):
-	def __init__(self,kind):
-		self.type=kind
-		self.score=FIELD_EFFECT[kind][1]
-		self.move_consumption=FIELD_EFFECT[kind][0]
-		self.time=0
-		self.up=random.choice([1,2,3])
-	def effect(self,w,m,score):
-		if self.time>=TEMPLE_UP_TIME and ((w.type<6 and w.up<BASE_UP_LIMIT) or (w.type>5 and w.up>HERO_UP_LIMIT)):
-			w.up+=1
-			if self.up==1:
-				w.attack+=1
-			if self.up==2:
-				w.speed+=1
-			if self.up==3:
-				w.defence+=1
-			self.time=0
-			self.up=random.choice([1,2,3])
-			score+=self.score
-		return []
-#ÌØÊâµØĞÎ£ºÅÚËş¡¢»ú¹Ø¡¢ÉñÃí
+    '''ç‰¹æ®Šåœ°å½¢ï¼šç¥åº™
+    FIELD_EFFECT(move_consumption, score, attack_up, speed_up, defence_up)'''
+    def __init__(self, kind):
+        self.kind = kind
+        self.score = FIELD_EFFECT[kind][1]
+        self.move_consumption = FIELD_EFFECT[kind][0]
+        self.time = 0 #ç¥åº™è®¡æ•°å™¨ 
+        self.up = random.choice([1,2,3]) #ä¸‹ä¸€ä¸ªç¥ç¬¦ç§ç±»
+    def effect(self, w, m, score):
+        if self.time >= TEMPLE_UP_TIME and ((w.kind < 6 and w.up < BASE_UP_LIMIT) or (w.kind > 5 and w.up > HERO_UP_LIMIT)):
+            w.up += 1
+            if self.up == 1:
+                w.attack += 1
+            if self.up == 2:
+                w.speed += 1
+            if self.up == 3:
+                w.defence += 1
+            self.time = 0
+            self.up = random.choice([1,2,3])
+            score[0] += self.score
+        return []
 class Base_Unit:
-	def __init__(self,kind,position=(0,0)):
-		self.type=kind
-		self.up=0
-		self.position=position
-		self.life=ABILITY[kind][0]
-		self.attack=ABILITY[kind][1]
-		self.speed=ABILITY[kind][2]
-		self.defence=ABILITY[kind][3]
-		self.move_range=ABILITY[kind][4]
-		self.attack_range=ABILITY[kind][5]
-		self.move_speed=ABILITY[kind][6]
-#(LIFE,ATTACK,SPEED,DEFENCE,MOVE_RANGE,ATTACK_RANGE,MOVE_SPEED)		
-	def move(self,x,y):
-		self.position=(x,y)
-		#ÒÆ¶¯ÖÁ(x,y)
-	def attack(self,enemy):
-		r=random.uniform(0,100)
-		s=(r<=(self.speed*3-enemy.speed*2))
-		enemy.life-=(self.attack-enemy.defence)*s*ATTACK_EFFECT[self.type][enemy.type]
-		return s
-		#¹¥»÷ enemy	
-	def __lt__(self,orther):
-		return self.move_speed>orther.move_speed
+    '''ä¸€èˆ¬å£«å…µ
+    (LIFE, ATTACK, SPEED, DEFENCE, MOVE_RANGE, ATTACK_RANGE, MOVE_SPEED)'''
+    def __init__(self, kind, position = (0,0)):
+        self.kind = kind
+        self.up = 0 #å£«å…µèƒ½åŠ›ä¸Šå‡æ•°
+        self.position = position
+        self.life = ABILITY[kind][0]
+        self.attack = ABILITY[kind][1]
+        self.speed = ABILITY[kind][2]
+        self.defence = ABILITY[kind][3]
+        self.move_range = ABILITY[kind][4]
+        self.attack_range = ABILITY[kind][5]
+        self.move_speed = ABILITY[kind][6]
+    def move(self, x, y):
+        '''ç§»åŠ¨è‡³(x, y)'''
+        self.position = (x, y)
+    def attack(self, enemy):
+        '''æ”»å‡» enemy'''    
+        r = random.uniform(0,100)
+        s = (r <= (self.speed*3 - enemy.speed*2))
+        enemy.life -= (self.attack - enemy.defence) * s * ATTACK_EFFECT[self.kind][enemy.kind]
+        return s
+    def __lt__(self, orther):
+        '''æ¯”è¾ƒæ”»å‡»é¡ºåº'''
+        return self.move_speed > orther.move_speed
+       
 class Wizard(Base_Unit):
-	def skill(self,other):
-		other.life+=self.attack
-		if other.life>ABILITY[other.type][0]:
-			other.life=ABILITY[other.type][0]
-		#¶ÔotherÊ¹ÓÃ»Ø¸´¼¼ÄÜ
+    '''æ³•å¸ˆ
+    (LIFE, ATTACK, SPEED, DEFENCE, MOVE_RANGE, ATTACK_RANGE, MOVE_SPEED)'''    
+    def skill(self, other):
+        '''å¯¹otherä½¿ç”¨å›å¤æŠ€èƒ½'''
+        other.life += self.attack
+        if other.life > ABILITY[other.kind][0]:
+            other.life = ABILITY[other.kind][0]
 class Hero(Base_Unit):
-	def skill(self,w):
-		pass
-		#Ó¢ĞÛ¼¼ÄÜ
+    def skill(self, w):
+        '''è‹±é›„æŠ€èƒ½'''
+        pass
 class Begin_Info:
-	def __init__(self,whole_map,base,hero_type=[6,6]):
-		self.map=whole_map
-		self.base=base
-		self.hero_type=hero_type
+    def __init__(self, whole_map, base, hero_type = [6,6]):
+        self.map = whole_map #äºŒç»´åœ°å›¾åˆ—è¡¨
+        self.base = base #äºŒç»´å£«å…µåˆ—è¡¨ï¼Œç¬¬ä¸€ç»´è¡¨ç¤ºé˜Ÿä¼0/1
+        self.hero_type = hero_type #äºŒå…ƒæ•°ç»„è¡¨ç¤ºä¸¤é˜Ÿè‹±é›„ç±»å‹
 class Round_Begin_Info:
-	def __init__(self,move_unit,move_range,base):
-		self.id=move_unit
-		self.range=move_range
-		self.base=base
+    def __init__(self, move_unit, move_range, base, temple):
+        self.id = move_unit #å¦‚(0,2)è¡¨ç¤º0é˜Ÿç¬¬ä¸‰ä¸ªå£«å…µ
+        self.range = move_range #åæ ‡åˆ—è¡¨ï¼Œå¦‚[(0,0),(1,0)]
+        self.base = base 
+        self.temple = temple
+#templeåˆ—è¡¨è¡¨ç¤ºå„ç¥åº™æ˜¯å¦å‡ºç°ç¥ç¬¦ï¼Œå¦‚[[(1,1),0],[(2,3),2]]è¡¨ç¤º(1,1)å¤„ç¥åº™æ— ç¥ç¬¦,(2,3)å¤„ç¥åº™æœ‰2ç±»ç¥ç¬¦        
 class Command:
-	def __init__(self,order=0,move_position=0,target_id=0):
-		self.move=move_position
-		self.order=order#0:´ı»ú£¬1:¹¥»÷£¬2:¼¼ÄÜ
-		self.target=target_id
+    def __init__(self,order = 0, move_position = 0, target_id = 0):
+        self.move = move_position #åæ ‡(x,y)
+        self.order = order #0:å¾…æœºï¼Œ1:æ”»å‡»ï¼Œ2:æŠ€èƒ½
+        self.target = target_id #åŒRound_Begin_Info.move_unit
 class Round_End_Info:
-	def __init__(self,base,map_change,route,attack_effect,score,over=-1):
-		self.base=base
-		self.change=map_change
-		self.route=route
-		self.score=score
-		self.over=over
-		self.effect=attack_effect
+    def __init__(self, base, map_change, attack_effect, score, over = -1):
+        self.base = base
+        self.change = map_change #å¦‚[(TRAP,(1,1))]è¡¨ç¤º(1,1)å¤„å‡ºç°é™·é˜±ï¼Œè¯¦ç»†è§class Map_Gear
+        self.score = score #äºŒå…ƒæ•°ç»„ï¼Œè¡¨ç¤ºå½“å‰ä¸¤é˜Ÿç§¯åˆ†
+        self.over = over #-1è¡¨ç¤ºæœªç»“æŸï¼Œ0è¡¨ç¤º0é˜Ÿèƒœï¼Œ1è¡¨ç¤º1é˜Ÿèƒœ
+        self.effect = attack_effect #äºŒå…ƒç»„è¡¨ç¤ºæ”»å‡»ä¸åå‡»æ–¹æ˜¯å¦å‘½ä¸­,1è¡¨ç¤ºå‘½ä¸­ï¼Œ0è¡¨ç¤ºæœªå‘½ä¸­ï¼Œ-1è¡¨ç¤ºæœªæ”»å‡»(è¶…å‡ºæ”»å‡»èŒƒå›´æˆ–å·²æ­»äº¡),å¦‚(1,-1)è¡¨ç¤ºæ”»å‡»å‘½ä¸­ï¼Œç›®æ ‡æœªåå‡»
