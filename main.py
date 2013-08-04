@@ -1,78 +1,96 @@
+# -*- coding: UTF-8 -*-
 import basic
 
-def available_spots(map_list, unit_list, source_num):
-'''¸Ãº¯ÊıÓÃÓÚ¼ÆËãµ±Ç°µØÍ¼ÏÂÄ³µ¥Î»µÄ»î¶¯·¶Î§¡£
-   ´«Èë²ÎÁ¿map_list£¬Îª»ù±¾µØÍ¼µ¥ÔªµÄ¶şÎ¬Êı×é
-   ´¢´æÁËµØÍ¼µÄÈ«²¿ĞÅÏ¢¡£unit_listÍ¬Ñù¼ÇÂ¼ÁËËùÓĞ
-   µ¥Î»µÄĞÅÏ¢¡£source_numÊÇÒ»¸öÔª×é£¬Îª(side_num, object_num)
-'''
-    #¼ÆËãµ¥Î»×èµ²µÄÎ»ÖÃ
-    u_block = [unit_list[i][j].position for i in range(2) for j in range(len(unit_list[i]))]
-
-    d_spots = [] # ËùÓĞÒÑ¾­È·¶¨¿Éµ½ÇÒËÉ³ÚÍê±ÏµÄµã
-    a_spots = [] # ËùÓĞ±»ËÉ³Ú¹ı£¬Î´È·¶¨¿Éµ½µÄµã
-    a_weight = [] # a_spotsµÄµãÖĞµÄÈ¨Öµ
-
-    # ½«Ô´µã¼ÓÈë(±¸×¢£ºÕâÀïÄ¬ÈÏµØÍ¼¼ÓÁËÒ»È¦)
-    s_unit = unit_list[source_num[0]][source_num[1]] # Ä¿±êµ¥Î»
-    s_position = s_unit.position # Ô´µã×ø±ê
-    a_spots = [s_position]
-    a_weight = [0]
-    while len(a_spots) != len(map_list) * len(map_list[0]):
-        min_weight = min(a_weight) # Çóa_weightÖĞ×îĞ¡Öµ
-        if min_weight >= s_unit.move_range: # µ½´ï¼«ÏŞ
-	    break
-        s = a_weight.index(min_weight) # È¡µÃÆäĞòºÅ
-        # ËÉ³Ú²Ù×÷
-        p_modify = ((1, 0), (-1, 0), (0, 1), (0, -1))
-        for i in range(4):
-            p = a_spots[s] + p_modify # ¿ÉÒÔËÉ³ÚµÄËÄ¸ö·½Ïòµã
-            if not (p in u_block or p in d_spots): # ËÉ³ÚµãµÄÌõ¼ş
-                if p in a_spots: # ¸üĞÂ
-                    lf = map_list[p[0]][p[1]].landform
-                    p_id = a_spots.index(p)
-                    if MOVE_COST[lf] + a_weight[s] < a_weight[p_id]:
-                        a_weight[p_id] = MOVE_COST[lf] + a_weight[s]
-                else:    #ĞÂ¼ÓÈë
-                    lf = map_list[p[0]][p[1]].landform
-                    a_spots.append(p)
-                    a_weight.append(a_weight[s] + MOVE_COST[lf])
-
-        # ËÉ³Ú½áÊøºó£¬½« s ´ÓaĞòÁĞÉ¾³ı£¬ ½«Ëü¼ÓÈëµ½dĞòÁĞÖĞ
-        d.append(a_spots[s])
-        a_spots.pop(s)
-        a_weight.pop(s)
-    return d_spots
-
+def available_spots(map_list, unit_list, source_num, move_target = (-1,-1)):
+    '''è¯¥å‡½æ•°ç”¨äºè®¡ç®—å½“å‰åœ°å›¾ä¸‹æŸå•ä½çš„æ´»åŠ¨èŒƒå›´ã€‚
+       ä¼ å…¥å‚é‡map_listï¼Œä¸ºåŸºæœ¬åœ°å›¾å•å…ƒçš„äºŒç»´æ•°ç»„
+       å‚¨å­˜äº†åœ°å›¾çš„å…¨éƒ¨ä¿¡æ¯ã€‚unit_liståŒæ ·è®°å½•äº†æ‰€æœ‰
+       å•ä½çš„ä¿¡æ¯ã€‚source_numæ˜¯ä¸€ä¸ªå…ƒç»„ï¼Œä¸º(side_num, object_num)
+       å¦‚æœæŒ‡å®šmove_targetç”¨äºæŒ‡å®šç§»åŠ¨ç›®çš„åœ°åè¿”å›ç§»åŠ¨è·¯çº¿,ä¸ºç»è¿‡ç‚¹çš„åˆ—è¡¨å½¢å¼å¦‚[(0,0),(1,0),(1,1),(1,2)]'''
+    s_unit = unit_list[source_num[0]][source_num[1]] # ç›®æ ‡å•ä½
+    s_position = s_unit.position # æºç‚¹åæ ‡
+    k = 1 - source_num[0]
+    u_block = []
+    if s_unit.kind != DRAGON_RIDER:
+        for j in range(len(unit_list[k])):
+            if unit_list[k][j].life > 0:
+                u_block += [unit_list[k][j].position]
+        for i in range(len(map_list)):
+            for j in range(len(map_list[i])):
+                if map_list[i][j].kind == BARRIER and not (i, j) in u_block:
+                    u_block += [(i, j)]
+    #è®¡ç®—å•ä½é˜»æŒ¡çš„ä½ç½®
+    s_block = []
+    for j in range(len(unit_list[1 - k])):
+        if unit_list[1 - k][j].life > 0 and j != source_num[1]:
+            s_block += [unit_list[1 - k][j].position]
+    #è®¡ç®—å·±æ–¹å•ä½å æ®è€Œä¸èƒ½åˆ°è¾¾çš„ä½ç½®
+    d_spots = [s_position] # æ‰€æœ‰å·²ç»ç¡®å®šå¯åˆ°çš„ç‚¹
+    a_spots = [[[s_position,1]]] # æ‰€æœ‰ç‚¹æŒ‰åˆ°è¾¾é¡ºåºå½¢æˆçš„äºŒé˜¶é“¾è¡¨ï¼Œå…ƒç´ ä¸º ç‚¹+è¯¥ç‚¹å·²æ¶ˆè€—çš„ç§»åŠ¨åŠ›
+    direction = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    for i in range(1, s_unit.move_range):
+        a = []
+        for former_point in a_spots[i-1]:
+            if former_point[1] >= map_list[former_point[0][0]][former_point[0][1]].move_consumption:
+                for j in direction:
+                    i_1 = former_point[0][0] + j[0]
+                    i_2 = former_point[0][1] + j[1]
+                    if 0 <= i_1 < len(map_list) and 0<= i_2 < len(map_list[0]):
+                        latter_point = [(i_1, i_2), 1]
+                        if not (latter_point[0] in u_block or latter_point[0] in d_spots):
+                            if not latter_point[0] in s_block:
+                                d_spots += [latter_point[0]]
+                            a += [latter_point]
+            else:
+                a += [[(former_point[0][0], former_point[0][1]), former_point[1] + 1]]
+        a_spots += [a]
+    if move_target in d_spots:
+        d_spots = []
+        i = len(a_spots)
+        while i > 1:
+            i -= 1
+            if [move_target, 1] in a_spots[i]:
+                d_spots += [move_target]
+                for j in direction:
+                    i_1 = move_target[0] + j[0]
+                    i_2 = move_target[1] + j[1]
+                    if (i_1, i_2) in  [k[0] for k in a_spots[i-1]]:
+                        move_target = (i_1, i_2)
+                        break
+        d_spots.reverse()
+    return d_spots    
 def perparation(whole_map, base, score, map_temple):
     for i in map_temple:
         m=whole_map[i[0][0]][i[0][1]]
         if m.time >= basic.TEMPLE_UP_TIME:
-            i[1]=m.up #ÓĞÉñ·û´æÔÚ
+            i[1]=m.up #æœ‰ç¥ç¬¦å­˜åœ¨
         else:
             m.time += 1
-        #ÉñÃí¼ÆÊ±Æ÷+1
+        #ç¥åº™è®¡æ—¶å™¨+1
     for i in [0,1]:
         for j in range(0, len(base[i])):
             p = base[i][j].position
             if whole_map[p[0]][p[1]].kind == basic.TRAP:
                 base[i][j].life -= basic.TRAP_COST
-            #ÏİÚå¼õÉúÃü
+            #é™·é˜±å‡ç”Ÿå‘½
             elif whole_map[p[0]][p[1]].kind == basic.TURRET:
                 whole_map[p[0]][p[1]].time += 1
                 if whole_map[p[0]][p[1]].time == basic.TURRET_SCORE_TIME:
                     score[i] += whole_map[p[0]][p[1]].score
-            #Á¬ĞøÕ¼ÓĞ¶à»ØºÏÅÚËş»ı·Ö
-#Ã¿»ØºÏÇ°×¼±¸½×¶Î
-def calaculation(command, base, whole_map, move_range, map_change, map_temple,score):
+            #è¿ç»­å æœ‰å¤šå›åˆç‚®å¡”ç§¯åˆ†
+#æ¯å›åˆå‰å‡†å¤‡é˜¶æ®µ
+def calaculation(command, base, whole_map, move_range, map_change, map_temple, score, unit_id):
     move_position = command.move
     order = command.order
     w = command.target
-    attack_1 = 0; attack_2 = 0
+    i = unit_id[1]; j = unit_id[0]
+    attack_1 = -1; attack_2 = -1
+    route = [base[j][i].position]
     if move_position in move_range and move_position != base[j][i].position:
         whole_map[base[j][i].position[j]][base[j][i].position[1]].leave(base[j][i])
+        route = available_spots(whole_map, base, unit_id, move_position)        
         base[j][i].move(move_position)
-        map_change += whole_map[move_position[0]][move_position[1]].effect(base[j][i], whole_map,[score[j]])
+        map_change = whole_map[move_position[0]][move_position[1]].effect(base[j][i], whole_map,[score[j]])
         for i in map_temple:
             if i[0] == move_position:
                 i[1] = 0
@@ -81,11 +99,11 @@ def calaculation(command, base, whole_map, move_range, map_change, map_temple,sc
             attack_1 = base[j][i].attack(base[1-j][w[1]])
         if base[1-j][w[1]].life > 0 and distance(base[j][i].position, base[1-j][w[1]].position) in base[1-j][w[1]].attacka_range:
             attack_2 = base[1-j][w[1]].attack(base[j][i])
-        #¹¥»÷¼°·´»÷
+        #æ”»å‡»åŠåå‡»
     elif order == 2 and w[0] == j:
         if distance(base[j][i].position, base[j][w[1]].position) == 1:
             base[j][i].skill(base[j][w[1]])
-            #Ê¹ÓÃ¼¼ÄÜ
+            #ä½¿ç”¨æŠ€èƒ½
     over = -1
     for i in [0,1]:
         r = True
@@ -94,19 +112,19 @@ def calaculation(command, base, whole_map, move_range, map_change, map_temple,sc
                 r = False
         if r:
             over = 1-i
-            break
+            break   
     return basic.Round_End_Info(base, map_change, route, (attack_1, attack_2), score, over)
-#½«´«ÈëÖ¸Áî¼ÆËãºó´«³ö
+#å°†ä¼ å…¥æŒ‡ä»¤è®¡ç®—åä¼ å‡º
 def end_score(score, base, over):
     if over == -1:
         for i in [0,1]:
             for j in range(0, len(base[i])):
                 if base[i][j].life > 0:
-                if base[i][j].kind < 6:
-                    score[i] += base[i][j].life * basic.BASE_SCORE
-                else:
-                    score[i] += base[i][j].life * basic.HERO_SCORE
+                    if base[i][j].kind < 6:
+                        score[i] += base[i][j].life * basic.BASE_SCORE
+                    else:
+                        score[i] += base[i][j].life * basic.HERO_SCORE
         if score[1] != score[0]:
             over = (score[1] > score[0])
     return over
-#½áÊøºó¼ÆËã»ı·Ö·µ»ØÊ¤¶Ó£¬£¨-1±íÊ¾Æ½¾Ö£©
+#ç»“æŸåè®¡ç®—ç§¯åˆ†è¿”å›èƒœé˜Ÿï¼Œï¼ˆ-1è¡¨ç¤ºå¹³å±€ï¼‰
