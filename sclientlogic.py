@@ -1,13 +1,18 @@
 # -*- coding: UTF-8 -*-
-import socket, cPickle, sio, time, basic, main
+import socket,cPickle,sio,time,basic
 print 'logic'
-conn = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+serv=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 try:
-    conn.connect((sio.HOST, sio.LOGIC_PORT))
+	serv.bind((sio.HOST,sio.LOGIC_PORT))
 except:
-    print 'failed to connect, the program will exit...'
-    time.sleep(2)
-    exit(1)
+	print 'port occupied, the program will exit...'
+	time.sleep(3)
+	exit(1)
+serv.listen(1)
+print 'waiting for platform connection...\n',
+conn,address = serv.accept()
+print 'platform connected: %s' %(str(address))
+
 
 begin_Info = sio._recvs(conn)
 base = begin_Info.base
@@ -19,7 +24,7 @@ base[1] = [basic.Hero(hero_type[1], base[1][0].position)] + base[1][1:]
 base[0].sort(); base[1].sort()
 for i in range(0,len(whole_map)):
     for j in range(0,len(whole_map[i])):
-        if whole[i][j].kind == basic.TEMPLE:
+        if whole_map[i][j].kind == basic.TEMPLE:
             map_temple += [[(i, j), 0]]
 
 while over == -1 and turn < basic.TURN_MAX:

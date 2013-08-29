@@ -42,6 +42,7 @@ REINFO_SET = 3
 class MapInfo:
 	def __init__(self,whole_map):
 		self.mapInfo = whole_map
+		
 #将对象以字符串形式通过指定连接发送
 def _sends(conn,data):
 	conn.send(cPickle.dumps(data))

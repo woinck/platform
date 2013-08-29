@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-import cPickle,socket,threading,time,sio,basic,os
+import cPickle,socket,threading,time,sio,basic,os,field
 
 #from sclientui import UI_Run
 #from sclientlogic import Logic_Run
@@ -77,7 +77,7 @@ class Sui(threading.Thread):
 		#与UI连接
 		connUI,address = _SocketConnect(sio.HOST,sio.UI_PORT,'UI')
 		
-		#发送游戏模式、地图和AI信息
+		#接收游戏模式、地图和AI信息
 		gameMode,gameMapPath,gameAIPath=sio._recvs(connUI)
 		
 		#设置AI超时开关
@@ -87,7 +87,6 @@ class Sui(threading.Thread):
 			else:
 				timeoutSwitch[i]=1
 		
-		
 		if gameMode <= sio.PLAYER_VS_PLAYER:
 			if not sio.DEBUG_MODE:
 				logic_run.start()
@@ -95,8 +94,9 @@ class Sui(threading.Thread):
 			logic_thread.start()
 		
 		#读取地图文件
-		mapInfo=sio._ReadFile(gameMapPath)
-			
+		field.get_map(gameMapPath, mapInfo, base)
+		#mapInfo=sio._ReadFile(gameMapPath)
+		
 		#运行AI线程及文件
 		while gProc.acquire():
 			if gProcess != sio.LOGIC_CONNECTED:
@@ -229,7 +229,11 @@ class Slogic(threading.Thread):
 			if gProcess < sio.HERO_TYPE_SET:
 				gProc.wait()
 			else:
-				base = sio.construct_base(mapInfo,heroType)###########################
+				print 'heroType:',
+				print heroType
+				for i in range(2):
+					base[i][0].kind = heroType[i]
+				#base = sio.construct_base(mapInfo,heroType)###########################
 				sio._sends(connLogic,basic.Begin_Info(mapInfo,base,heroType))
 				gProc.release()
 				break
@@ -325,6 +329,8 @@ class Sai(threading.Thread):
 					try:
 						sio._sends(connAI[i],mapInfo)
 						aiInfoTemp,heroTypeTemp = sio._recvs(connAI[i])
+						print 'heroTypeTemp=',
+						print heroTypeTemp
 						aiInfo.append(aiInfoTemp)
 						heroType.append(heroTypeTemp)
 					except socket.timeout:
@@ -396,11 +402,15 @@ class Prog_Run(threading.Thread):
 global mapInfo,heroType,aiInfo
 global rbInfo,reInfo,rCommand
 global winner,gameMode,timeoutSwitch
+global whole_map,base
 
 aiInfo=[]
 heroType=[]
 reInfo=None
 timeoutSwitch=[1,1]
+
+mapInfo = []
+base = [[], []]
 
 #设置进度标记
 gProcess = sio.START

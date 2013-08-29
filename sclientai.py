@@ -1,15 +1,18 @@
 # -*- coding: UTF-8 -*-
 import socket,cPickle,sio,time,basic,os
 print 'ai2'
+
 #AI需要完成的函数有两个：GetHeroType() 与AI()
 def GetHeroType(mapInfo):
-	return (6,6)
+	return 6
 	
 def AI(rBeginInfo):
 	return basic.Command((1,2),'attack',3)
 
 	
 aiInfo='Sample'
+
+#==================================================================
 
 conn=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 

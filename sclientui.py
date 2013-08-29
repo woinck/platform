@@ -10,7 +10,7 @@ class UI_Player(threading.Thread):
 		
 	def GetHeroType(self,mapInfo):
 			# time for player to choose herotype here!!
-			result = (6,6)
+			result = 6
 			return result
 			
 	def AI(self,rBeginInfo):
@@ -58,11 +58,11 @@ except:
 	exit(1)
 	
 gameMode = sio.PLAYER_VS_PLAYER
-gameMapPath = 'C:\\Users\\woinck\\Documents\\GitHub\\platform\\SampleMap.Map'
+gameMapPath = u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.txt'
 
 gameAIPath=[]
 #若某方（1P,2P）由玩家控制，请将其AIPath设为 None
-aiPath = 'C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py'
+aiPath = u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py'
 gameAIPath.append(None)
 gameAIPath.append(None)
 
