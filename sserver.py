@@ -277,6 +277,7 @@ class Slogic(threading.Thread):
 				rProc.release()
 			
 			#判断游戏是否结束，并调整游戏进度标记
+			print reInfo.over
 			if reInfo.over != -1:
 				gProc.acquire()
 				gProcess = sio.OVER

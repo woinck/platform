@@ -11,13 +11,13 @@ def available_spots(map_list, unit_list, source_num, move_target = (-1,-1)):
     s_position = s_unit.position # 源点坐标
     k = 1 - source_num[0]
     u_block = []
-    if s_unit.kind != DRAGON_RIDER:
+    if s_unit.kind != basic.DRAGON_RIDER:
         for j in range(len(unit_list[k])):
             if unit_list[k][j].life > 0:
                 u_block += [unit_list[k][j].position]
         for i in range(len(map_list)):
             for j in range(len(map_list[i])):
-                if map_list[i][j].kind == BARRIER and not (i, j) in u_block:
+                if map_list[i][j].kind == basic.BARRIER and not (i, j) in u_block:
                     u_block += [(i, j)]
     #计算单位阻挡的位置
     s_block = []
@@ -79,7 +79,7 @@ def perparation(whole_map, base, score, map_temple):
                     score[i] += whole_map[p[0]][p[1]].score
             #连续占有多回合炮塔积分
 #每回合前准备阶段
-def calaculation(command, base, whole_map, move_range, map_change, map_temple, score, unit_id):
+def calculation(command, base, whole_map, move_range, map_change, map_temple, score, unit_id):
     move_position = command.move
     order = command.order
     w = command.target

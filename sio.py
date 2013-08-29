@@ -3,7 +3,7 @@
 import cPickle,basic,time
 
 #游戏运行参数
-DEBUG_MODE = 1 # 为0时,启动游戏只需运行sserver.py即可,程序将自动调用ui及logic文件;为1时先手动运行logic,再运行sserver,再运行ui
+DEBUG_MODE = 0 # 为0时,启动游戏只需运行sserver.py即可,程序将自动调用ui及logic文件;为1时先手动运行logic,再运行sserver,再运行ui
 REPLAY_MODE = 0 #此常量为1时会生成回放文件
 AI_CMD_TIMEOUT = 1 # AI命令最长等待时间，超过则不再接收
 AI_CONNECT_TIMEOUT = 3 # 与AI程序进行对接时的最长等待时间

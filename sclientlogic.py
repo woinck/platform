@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-import socket,cPickle,sio,time,basic
+import socket,cPickle,sio,time,basic,main
 print 'logic'
 serv=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 try:
@@ -12,6 +12,10 @@ serv.listen(1)
 print 'waiting for platform connection...\n',
 conn,address = serv.accept()
 print 'platform connected: %s' %(str(address))
+
+#
+map_change = None
+#
 
 
 begin_Info = sio._recvs(conn)
@@ -31,9 +35,10 @@ while over == -1 and turn < basic.TURN_MAX:
     turn += 1
     main.perparation(whole_map, base, score, map_temple)
     for i in range(0, len(base[0])):
-        for j in range[0,1]:
+        for j in [0,1]:
             if base[j][i].life > 0:
-                is_die[j] = False
+                pass
+				#is_die[j] = False
             move_range = main.available_spots(whole_map, base,(j,i))
             map_temple
             roundBeginInfo = basic.Round_Begin_Info((j,i), move_range, base,map_temple)
@@ -41,7 +46,7 @@ while over == -1 and turn < basic.TURN_MAX:
             sio._sends(conn, roundBeginInfo)
             #接收AI的命令：
             roundCommand = sio._recvs(conn)
-            roundEndInfo = main.calculation(roundCommand, base, whole_map, move_range, map_change, map_temple,score)
+            roundEndInfo = main.calculation(roundCommand, base, whole_map, move_range, map_change, map_temple,score,(j,i))
             #发送每回合结束时的信息：
             sio._sends(conn, roundEndInfo)
             over = roundEndInfo.over
