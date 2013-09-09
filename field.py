@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import basic
-
+from field_shelve import *
 def construct_map(kind):
-	'''ÀûÓÃÀàĞÍ¹¹ÔìµØÍ¼¶ÔÏó(³ı»ú¹Øµ¥¶À¹¹Ôì)'''
+	'''åˆ©ç”¨ç±»å‹æ„é€ åœ°å›¾å¯¹è±¡(é™¤æœºå…³å•ç‹¬æ„é€ )'''
 	if kind == basic.TURRET:
 		return basic.Map_Turret(kind)
 	elif kind == basic.TEMPLE:
@@ -21,10 +21,10 @@ def print_position(point):
 	return string
 
 def get_map(route, whole_map, base):
-	'''ÎÄ¼ş²Ù×÷,¶ÁÈëµØÍ¼
-	   whole_map±íÊ¾µØĞÎÀàĞÍ	
-	   base[0],base[1]ÁĞ±í±íÊ¾Ê¿±ø
-	   routeÎªµØÍ¼´æ´¢Â·¾¶'''
+	'''æ–‡ä»¶æ“ä½œ,è¯»å…¥åœ°å›¾
+	   whole_mapè¡¨ç¤ºåœ°å½¢ç±»å‹	
+	   base[0],base[1]åˆ—è¡¨è¡¨ç¤ºå£«å…µ
+	   routeä¸ºåœ°å›¾å­˜å‚¨è·¯å¾„'''
 	map_file = open(route, "r")
 	s = 0
 	while 1:
@@ -59,7 +59,7 @@ def get_map(route, whole_map, base):
 				break
 			gear_control_barrier += [get_position(string[:5])]
 		whole_map[gear_position[0]][gear_position[1]] = basic.Map_Gear(basic.GEAR, gear_control_trap, gear_control_barrier)
-	#½«¶ÁÈëµÄÊı×ÖµØÍ¼×ª»¯ÎªÀàĞÍµØÍ¼		
+	#å°†è¯»å…¥çš„æ•°å­—åœ°å›¾è½¬åŒ–ä¸ºç±»å‹åœ°å›¾		
 	for i in [0,1]:
 		string = map_file.readline()
 		while string != '\n':
@@ -68,12 +68,12 @@ def get_map(route, whole_map, base):
 			base[i] += [basic.Base_Unit(ord(c) - 48, position)]
 			string = string[8:]
 	map_file.close()
-	#¶ÁÈëÊ¿±ø
+	#è¯»å…¥å£«å…µ
 def print_map(route, whole_map, base):
-	'''ÎÄ¼ş²Ù×÷£¬½«µØÍ¼Ğ´ÈëÎÄ¼ş
-	   whole_map±íÊ¾µØĞÎÀàĞÍ	
-	   base[0],base[1]ÁĞ±í±íÊ¾Ê¿±ø
-	   routeÎªµØÍ¼´æ´¢Â·¾¶'''	
+	'''æ–‡ä»¶æ“ä½œï¼Œå°†åœ°å›¾å†™å…¥æ–‡ä»¶
+	   whole_mapè¡¨ç¤ºåœ°å½¢ç±»å‹	
+	   base[0],base[1]åˆ—è¡¨è¡¨ç¤ºå£«å…µ
+	   routeä¸ºåœ°å›¾å­˜å‚¨è·¯å¾„'''	
 	map_file = open(route, 'w')
 	map_gear = []
 	for i in range(len(whole_map)):
@@ -95,7 +95,14 @@ def print_map(route, whole_map, base):
 		for j in base[i]:
 			map_file.write(chr(j.kind + 48) + ':' + print_position(j.position) + ';')
 		map_file.write('\n')
-#Ó¦ÓÃÊ¾Àı£º
-#whole_map = []; base = [[], []]
+#åº”ç”¨ç¤ºä¾‹ï¼š
+whole_map = []; base = [[], []]
 #get_map(u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.txt', whole_map, base)
+
+write_to((whole_map,base))
+
+#newmap,newbase=read_from(u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\map.db')
+#print newmap
+#print newbase
+raw_input
 #print_map(u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.txt', whole_map, base)

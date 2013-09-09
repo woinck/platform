@@ -57,8 +57,8 @@ except:
 	time.sleep(2)
 	exit(1)
 	
-gameMode = sio.PLAYER_VS_PLAYER
-gameMapPath = u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.txt'
+gameMode = sio.AI_VS_AI
+gameMapPath = u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.db'
 
 gameAIPath=[]
 #若某方（1P,2P）由玩家控制，请将其AIPath设为 None

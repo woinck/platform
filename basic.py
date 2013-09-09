@@ -1,4 +1,4 @@
-﻿# -*- coding: UTF-8 -*-
+# -*- coding: UTF-8 -*-
 import random
 import time
 #常量采用全字母大写，变量及函数全字母小写，类名首字母大写，单词用‘—‘隔开
