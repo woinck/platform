@@ -99,10 +99,10 @@ def print_map(route, whole_map, base):
 whole_map = []; base = [[], []]
 #get_map(u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.txt', whole_map, base)
 
-write_to((whole_map,base))
+#write_to((whole_map,base))
 
-#newmap,newbase=read_from(u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\map.db')
-#print newmap
-#print newbase
+newmap,newbase=read_from(u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\map.db')
+print newmap
+print newbase
 raw_input
 #print_map(u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.txt', whole_map, base)

@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
-import cPickle,socket,threading,time,sio,basic,os,field
+import cPickle,socket,threading,time,sio,basic,os
+from field_shelve import *
 
 #from sclientui import UI_Run
 #from sclientlogic import Logic_Run
@@ -64,10 +65,12 @@ class Sui(threading.Thread):
 		if AIPath == None:
 			conn.send('|')
 		else:
+			print AIPath
 			os.system('cmd /c start %s' %(AIPath))
 	
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo,gameMode,timeoutSwitch
+		global gProcess,rProcess
+		global mapInfo,base,heroType,aiInfo,gameMode,timeoutSwitch
 		global rbInfo,reInfo,rCommand
 		global ai_thread,logic_thread,logc_run
 		
@@ -94,8 +97,9 @@ class Sui(threading.Thread):
 			logic_thread.start()
 		
 		#读取地图文件
-		field.get_map(gameMapPath, mapInfo, base)
-		#mapInfo=sio._ReadFile(gameMapPath)
+		(mapInfo,base)=read_from(gameMapPath)
+				
+		#field.get_map(gameMapPath, mapInfo, base)
 		
 		#运行AI线程及文件
 		while gProc.acquire():
@@ -109,8 +113,8 @@ class Sui(threading.Thread):
 				gProc.release()
 				break
 			gProc.release()
-		
-		while gProc.acquire():
+
+			while gProc.acquire():
 			if gProcess != sio.ONE_AI_CONNECTED:
 				gProc.wait()
 			else:
@@ -119,8 +123,8 @@ class Sui(threading.Thread):
 				gProc.release()
 				break
 			gProc.release()
-		
-		#所有连接建立后，将游戏进度前调
+
+			#所有连接建立后，将游戏进度前调
 		while gProc.acquire():
 			if gProcess != sio.CONNECTED:
 				gProc.wait()
@@ -130,13 +134,17 @@ class Sui(threading.Thread):
 				gProc.release()
 				break
 			gProc.release()
-		
+		print 'connected!!!!!'
 		#AI返回heroType后将其传回界面
 		while gProc.acquire():
 			if gProcess != sio.HERO_TYPE_SET:
 				gProc.wait()
 			else:
-				sio._sends(connUI,(mapInfo,aiInfo))
+				print '##########'
+				print mapInfo
+				print base
+				print aiInfo
+				sio._sends(connUI,(mapInfo,base,aiInfo))
 				gProcess = sio.ROUND
 				gProc.notifyAll()
 				gProc.release()
@@ -206,7 +214,7 @@ class Slogic(threading.Thread):
 		self.name = 'Thread-Logic'
 	
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner
+		global gProcess,rProcess,mapInfo,heroType,aiInfo,rbInfo,reInfo,rCommand,winner,base
 
 		#connLogic,address = _SocketConnect(sio.HOST,sio.LOGIC_PORT,'Logic')
 		
@@ -306,7 +314,7 @@ class Sai(threading.Thread):
 		self.name = 'Thread-AI'
 	
 	def run(self):
-		global gProcess,rProcess,mapInfo,heroType,aiInfo
+		global gProcess,rProcess,mapInfo,heroType,aiInfo,base
 		global rbInfo,reInfo,rCommand
 		global gameMode,timeoutSwitch
 		
@@ -330,15 +338,15 @@ class Sai(threading.Thread):
 					try:
 						sio._sends(connAI[i],mapInfo)
 						aiInfoTemp,heroTypeTemp = sio._recvs(connAI[i])
-						print 'heroTypeTemp=',
-						print heroTypeTemp
 						aiInfo.append(aiInfoTemp)
 						heroType.append(heroTypeTemp)
 					except socket.timeout:
 						print '未收到AI',i+1,'的信息，将采用默认值'
 						aiInfo.append('Player'+str(i+1))
 						heroType.append(6)
-				
+				print base
+				for i in range(2):
+					base[i][0].kind=heroType[i]
 				#调节游戏进度标记
 				gProcess = sio.HERO_TYPE_SET
 				gProc.notifyAll()

@@ -3,8 +3,6 @@ import shelve
 import basic
 
 default = 'default_map.db'
-print 'default',
-print type(default)
 key = ("map", "base") # 定义shelve类的键值为"map"和"base"
 
 

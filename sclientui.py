@@ -63,8 +63,8 @@ gameMapPath = u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\Map.db'
 gameAIPath=[]
 #若某方（1P,2P）由玩家控制，请将其AIPath设为 None
 aiPath = u'C:\\Users\\woinck\\Documents\\GitHub\\platform\\sclientai.py'
-gameAIPath.append(None)
-gameAIPath.append(None)
+gameAIPath.append(aiPath)
+gameAIPath.append(aiPath)
 
 sio._sends(conn,(gameMode,gameMapPath,gameAIPath))
 
@@ -78,7 +78,7 @@ if gameMode == sio.PLAYER_VS_PLAYER or gameMode == sio.PLAYER_VS_AI:
 		cpu_1.start()
 
 #接收AI与地图信息
-mapInfo,aiInfo = sio._recvs(conn)
+(mapInfo,base,aiInfo) = sio._recvs(conn)
 print 'map recv'
 
 
