@@ -65,7 +65,6 @@ class Sui(threading.Thread):
 		if AIPath == None:
 			conn.send('|')
 		else:
-			print AIPath
 			os.system('cmd /c start %s' %(AIPath))
 	
 	def run(self):
@@ -114,7 +113,7 @@ class Sui(threading.Thread):
 				break
 			gProc.release()
 
-			while gProc.acquire():
+		while gProc.acquire():
 			if gProcess != sio.ONE_AI_CONNECTED:
 				gProc.wait()
 			else:
@@ -134,16 +133,12 @@ class Sui(threading.Thread):
 				gProc.release()
 				break
 			gProc.release()
-		print 'connected!!!!!'
+
 		#AI返回heroType后将其传回界面
 		while gProc.acquire():
 			if gProcess != sio.HERO_TYPE_SET:
 				gProc.wait()
 			else:
-				print '##########'
-				print mapInfo
-				print base
-				print aiInfo
 				sio._sends(connUI,(mapInfo,base,aiInfo))
 				gProcess = sio.ROUND
 				gProc.notifyAll()
@@ -152,6 +147,7 @@ class Sui(threading.Thread):
 			gProc.release()
 		
 		#初始化完毕，进入回合==============================================================
+		print 'ui in game'#for test
 		flag = False
 		#等待回合初始信息产生完毕
 		while gProcess < sio.OVER:
@@ -161,6 +157,9 @@ class Sui(threading.Thread):
 				else:
 					#发送回合信息
 					sio._sends(connUI,rbInfo)
+					print 'before sleep'#for test
+					time.sleep(2)#for test
+					print 'continue'#for test
 					rProc.release()
 					break
 				rProc.release()
@@ -172,6 +171,7 @@ class Sui(threading.Thread):
 				else:
 					#发送回合信息
 					sio._sends(connUI,(rCommand,reInfo))
+					print 'reInfo sent'#for test
 					#回合信息存至回放列表中
 					replayInfo.append([rbInfo,rCommand,reInfo])
 					rProcess = sio.START
@@ -237,8 +237,6 @@ class Slogic(threading.Thread):
 			if gProcess < sio.HERO_TYPE_SET:
 				gProc.wait()
 			else:
-				print 'heroType:',
-				print heroType
 				for i in range(2):
 					base[i][0].kind = heroType[i]
 				#base = sio.construct_base(mapInfo,heroType)###########################
@@ -257,9 +255,9 @@ class Slogic(threading.Thread):
 			gProc.release()
 		
 		#初始化完毕，进入回合==============================================================	
+		print 'logic in game'#for test
 		
 		while gProcess != sio.OVER:
-			
 			#接收回合开始信息
 			while rProc.acquire():
 				if rProcess != sio.START:
@@ -298,6 +296,8 @@ class Slogic(threading.Thread):
 				rProc.notifyAll()
 				rProc.release()
 				break	
+			
+			
 		winner = sio._recvs(connLogic)
 		
 		#接收胜利方信息
@@ -344,7 +344,6 @@ class Sai(threading.Thread):
 						print '未收到AI',i+1,'的信息，将采用默认值'
 						aiInfo.append('Player'+str(i+1))
 						heroType.append(6)
-				print base
 				for i in range(2):
 					base[i][0].kind=heroType[i]
 				#调节游戏进度标记
@@ -355,6 +354,7 @@ class Sai(threading.Thread):
 			gProc.release()
 
 		#初始化完毕，进入回合==============================================================
+		print 'ai in game'#for test
 		
 		#游戏回合阶段
 		while gProcess < sio.OVER:
